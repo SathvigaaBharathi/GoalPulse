@@ -181,18 +181,24 @@ const AchievementReport = () => {
                          <p className="text-xs text-slate-600 font-medium truncate max-w-xs">{row.goal_title}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-white text-slate-600 px-3 py-1 rounded-full text-[10px] font-black border border-slate-200 shadow-sm">{row.quarter}</span>
+                        <span className="bg-white text-slate-600 px-3 py-1 rounded-full text-[10px] font-black border border-slate-200 shadow-sm">{row.quarter ?? '—'}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-tighter ${
-                          row.status === 'completed' ? 'bg-success/10 text-success border-success/20' : 
-                          row.status === 'on_track' ? 'bg-warning/10 text-warning border-warning/20' : 
-                          'bg-slate-100 text-slate-500 border-slate-200'
-                        }`}>
-                          {row.status.replace('_', ' ')}
-                        </span>
+                        {row.status ? (
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-tighter ${
+                            row.status === 'completed' ? 'bg-success/10 text-success border-success/20' : 
+                            row.status === 'on_track' ? 'bg-warning/10 text-warning border-warning/20' : 
+                            'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}>
+                            {row.status.replace('_', ' ')}
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-tighter bg-slate-50 text-slate-400 border-slate-100">
+                            No check-in
+                          </span>
+                        )}
                       </td>
-                      <td className="px-6 py-4 text-right font-black text-primary font-mono">{row.actual_value !== null ? row.actual_value : '---'}</td>
+                      <td className="px-6 py-4 text-right font-black text-primary font-mono">{row.actual_value !== null && row.actual_value !== undefined ? row.actual_value : '---'}</td>
                     </tr>
                   ))}
                 </tbody>

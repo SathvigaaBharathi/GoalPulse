@@ -13,6 +13,7 @@ const GoalSheet = () => {
   const [data, setData] = useState({ sheet: null, goals: [], thrustAreas: [] });
   const [loading, setLoading] = useState(true);
   const [actionRefreshKey, setActionRefreshKey] = useState(0);
+  const [reworkReason, setReworkReason] = useState(null);
 
   const bumpAction = () => setActionRefreshKey(k => k + 1);
   
@@ -37,6 +38,20 @@ const GoalSheet = () => {
   useEffect(() => {
     fetchSheet();
   }, []);
+
+  useEffect(() => {
+    if (data.sheet?.status !== 'rework') { setReworkReason(null); return; }
+    const fetchReason = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await axios.get(`${apiUrl}/api/employee/next-action`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.type === 'rework_required') setReworkReason(res.data.detail);
+      } catch {}
+    };
+    fetchReason();
+  }, [data.sheet?.status, token]);
 
   const handleAddGoal = async (e) => {
     e.preventDefault();
@@ -110,6 +125,29 @@ const GoalSheet = () => {
   return (
     <div>
       <NextActionCard refreshKey={actionRefreshKey} />
+
+      {/* Rework feedback banner — shown prominently when manager returned the sheet */}
+      {data.sheet.status === 'rework' && (
+        <div className="mb-6 flex gap-3 p-4 rounded-xl border-2 border-orange-300 bg-orange-50 shadow-sm">
+          <div className="shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-orange-800 text-sm">Your manager returned this sheet for revision</p>
+            {reworkReason ? (
+              <blockquote className="mt-1.5 pl-3 border-l-4 border-orange-400 text-orange-900 text-sm italic">
+                "{reworkReason}"
+              </blockquote>
+            ) : (
+              <p className="text-orange-700 text-xs mt-1">Please review your goals and resubmit when ready.</p>
+            )}
+          </div>
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-primary">My Goal Sheet</h1>

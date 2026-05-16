@@ -149,7 +149,7 @@ router.post('/sheet/submit', requireAuth, (req, res) => {
   }
 });
 
-// MANAGER: Get approval queue
+// MANAGER: Get approval queue (submitted only)
 router.get('/queue', requireAuth, requireRole(['manager']), (req, res) => {
   try {
     const sheets = db.prepare(`
@@ -159,6 +159,24 @@ router.get('/queue', requireAuth, requireRole(['manager']), (req, res) => {
       JOIN cycles c ON s.cycle_id = c.id
       WHERE u.manager_id = ? AND s.status = 'submitted'
     `).all(req.user.userId);
+    res.json(sheets);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// MANAGER: Get approved sheets for the active cycle
+router.get('/approved-sheets', requireAuth, requireRole(['manager']), (req, res) => {
+  try {
+    const activeCycle = db.prepare('SELECT id FROM cycles WHERE is_active = 1').get();
+    if (!activeCycle) return res.json([]);
+    const sheets = db.prepare(`
+      SELECT s.*, u.name as employee_name, c.name as cycle_name
+      FROM goal_sheets s
+      JOIN users u ON s.employee_id = u.id
+      JOIN cycles c ON s.cycle_id = c.id
+      WHERE u.manager_id = ? AND s.cycle_id = ? AND s.status = 'approved'
+    `).all(req.user.userId, activeCycle.id);
     res.json(sheets);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -184,7 +202,7 @@ router.get('/sheet/:sheetId', requireAuth, requireRole(['manager']), (req, res) 
   }
 });
 
-// MANAGER: Return sheet for rework
+// MANAGER: Return sheet for rework (works from submitted OR approved)
 router.post('/sheet/:id/rework', requireAuth, requireRole(['manager']), (req, res) => {
   try {
     const { reason } = req.body;
@@ -194,11 +212,21 @@ router.post('/sheet/:id/rework', requireAuth, requireRole(['manager']), (req, re
 
     const sheet = db.prepare('SELECT * FROM goal_sheets WHERE id = ?').get(req.params.id);
     if (!sheet) return res.status(404).json({ error: 'Sheet not found' });
+    if (!['submitted', 'approved'].includes(sheet.status)) {
+      return res.status(400).json({ error: 'Sheet cannot be recalled in its current state' });
+    }
 
-    db.prepare("UPDATE goal_sheets SET status = 'rework' WHERE id = ?").run(req.params.id);
+    const wasApproved = sheet.status === 'approved';
 
-    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('sheet', ?, ?, 'sheet_rework', 'submitted', ?)");
-    audit.run(req.params.id, req.user.userId, JSON.stringify({ status: 'rework', reason }));
+    db.prepare("UPDATE goal_sheets SET status = 'rework', approved_at = NULL, approved_by = NULL WHERE id = ?").run(req.params.id);
+
+    // If recalling an approved sheet, unlock all goals so employee can edit
+    if (wasApproved) {
+      db.prepare("UPDATE goals SET is_locked = 0 WHERE sheet_id = ?").run(req.params.id);
+    }
+
+    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('sheet', ?, ?, 'sheet_rework', ?, ?)");
+    audit.run(req.params.id, req.user.userId, sheet.status, JSON.stringify({ status: 'rework', reason, recalledFromApproved: wasApproved }));
 
     // Notify Employee
     const sheetInfo = db.prepare('SELECT u.email, u.name FROM goal_sheets s JOIN users u ON s.employee_id = u.id WHERE s.id = ?').get(req.params.id);

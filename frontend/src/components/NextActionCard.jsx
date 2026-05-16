@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
-import { Clock, AlertCircle, Hourglass, Edit, CheckCircle, ChevronRight, Bell } from 'lucide-react';
+import { Clock, AlertCircle, Hourglass, Edit, CheckCircle, ArrowRight, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const URGENCY_STYLES = {
-  high:   { border: 'border-l-red-500',   bg: 'bg-red-50/60',    text: 'text-red-700',   dot: 'bg-red-500'   },
-  medium: { border: 'border-l-amber-500', bg: 'bg-amber-50/60',  text: 'text-amber-700', dot: 'bg-amber-500' },
-  low:    { border: 'border-l-teal-400',  bg: 'bg-teal-50/40',   text: 'text-teal-700',  dot: 'bg-teal-400'  },
-  none:   { border: 'border-l-green-500', bg: 'bg-green-50/40',  text: 'text-green-700', dot: 'bg-green-500' },
+  high:   { border: 'border-l-red-500',   bg: 'bg-red-50/60',    text: 'text-red-700',   badge: 'bg-red-500 text-white'   },
+  medium: { border: 'border-l-amber-500', bg: 'bg-amber-50/60',  text: 'text-amber-700', badge: 'bg-amber-500 text-white' },
+  low:    { border: 'border-l-teal-400',  bg: 'bg-teal-50/40',   text: 'text-teal-700',  badge: 'bg-teal-500 text-white'  },
+  none:   { border: 'border-l-green-500', bg: 'bg-green-50/40',  text: 'text-green-700', badge: 'bg-green-500 text-white' },
 };
 
 const TYPE_ICONS = {
-  submit_goals:     <Clock size={22} />,
-  rework_required:  <AlertCircle size={22} />,
-  waiting_approval: <Hourglass size={22} />,
-  checkin_pending:  <Edit size={22} />,
-  all_clear:        <CheckCircle size={22} />,
+  submit_goals:     <Clock size={20} />,
+  rework_required:  <AlertCircle size={20} />,
+  waiting_approval: <Hourglass size={20} />,
+  checkin_pending:  <Edit size={20} />,
+  all_clear:        <CheckCircle size={20} />,
 };
 
 const NextActionCard = ({ refreshKey = 0 }) => {
@@ -65,14 +65,7 @@ const NextActionCard = ({ refreshKey = 0 }) => {
 
   return (
     <div
-      onClick={() => isClickable && navigate(action.ctaRoute)}
-      className={`
-        w-full border-l-4 ${style.border} ${style.bg}
-        rounded-xl p-5 flex items-center gap-4 shadow-sm
-        transition-all duration-200
-        ${isClickable ? 'cursor-pointer hover:shadow-md hover:scale-[1.005]' : 'cursor-default'}
-        mb-6
-      `}
+      className={`w-full border-l-4 ${style.border} ${style.bg} rounded-xl p-5 flex items-center gap-4 shadow-sm mb-6`}
     >
       {/* Icon */}
       <div className={`shrink-0 ${style.text} p-2 rounded-lg bg-white/60`}>
@@ -92,17 +85,20 @@ const NextActionCard = ({ refreshKey = 0 }) => {
             className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 hover:text-primary underline underline-offset-2 transition-colors"
           >
             <Bell size={12} />
-            {nudging ? 'Sending...' : "If your manager hasn't responded, you can nudge them."}
+            {nudging ? 'Sending...' : "Manager hasn't responded? Nudge them."}
           </button>
         )}
       </div>
 
-      {/* CTA */}
-      {action.cta && (
-        <div className={`shrink-0 flex items-center gap-1.5 text-sm font-bold ${style.text} whitespace-nowrap`}>
+      {/* CTA — only shown when there's an action to take, not for rework (banner on goal sheet handles that) */}
+      {isClickable && action.type !== 'rework_required' && (
+        <button
+          onClick={() => navigate(action.ctaRoute)}
+          className={`shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg ${style.badge} transition-opacity hover:opacity-90 whitespace-nowrap`}
+        >
           {action.cta}
-          <ChevronRight size={16} />
-        </div>
+          <ArrowRight size={13} />
+        </button>
       )}
     </div>
   );
