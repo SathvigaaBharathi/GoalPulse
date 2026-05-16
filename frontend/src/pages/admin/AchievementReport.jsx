@@ -45,7 +45,7 @@ const AchievementReport = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `achievement_report.\${format === 'excel' ? 'xlsx' : 'csv'}`;
+      a.download = `achievement_report.${format === 'excel' ? 'xlsx' : 'csv'}`;
       document.body.appendChild(a);
       a.click();
       a.remove();

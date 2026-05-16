@@ -16,6 +16,35 @@ router.post('/', requireAuth, requireRole(['admin']), (req, res) => {
   }
 });
 
+router.get('/', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const cycles = db.prepare('SELECT * FROM cycles ORDER BY id DESC').all();
+    res.json(cycles);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/:id', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, year, phase1_open, phase1_close, q1_open, q1_close, q2_open, q2_close, q3_open, q3_close, q4_open, q4_close, is_active } = req.body;
+    
+    db.prepare(`
+      UPDATE cycles 
+      SET name = ?, year = ?, phase1_open = ?, phase1_close = ?, 
+          q1_open = ?, q1_close = ?, q2_open = ?, q2_close = ?, 
+          q3_open = ?, q3_close = ?, q4_open = ?, q4_close = ?,
+          is_active = ?
+      WHERE id = ?
+    `).run(name, year, phase1_open, phase1_close, q1_open, q1_close, q2_open, q2_close, q3_open, q3_close, q4_open, q4_close, is_active ? 1 : 0, id);
+    
+    res.json({ message: 'Cycle updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/active/window', requireAuth, (req, res) => {
   try {
     const activeCycle = db.prepare('SELECT * FROM cycles WHERE is_active = 1').get();

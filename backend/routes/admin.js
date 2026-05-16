@@ -17,7 +17,7 @@ router.get('/audit-log', requireAuth, requireRole(['admin']), (req, res) => {
 
     if (user) {
       query += ` AND u.name LIKE ?`;
-      params.push(`%\${user}%`);
+      params.push(`%${user}%`);
     }
     if (date) {
       query += ` AND date(a.changed_at) = ?`;
