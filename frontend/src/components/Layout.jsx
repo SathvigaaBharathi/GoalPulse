@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import RoleSwitcher from './RoleSwitcher';
 import CycleTimelineBanner from './CycleTimelineBanner';
-import { Activity, LogOut, LayoutDashboard, Target, Calendar, BarChart3, ShieldCheck, AlertCircle, FileText, Settings, Network } from 'lucide-react';
+import { Activity, LogOut, LayoutDashboard, Target, Calendar, BarChart3, ShieldCheck, AlertCircle, FileText, Settings, Network, Zap } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useAuthStore();
