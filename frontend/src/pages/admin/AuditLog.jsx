@@ -202,7 +202,7 @@ const AuditLog = () => {
                 return (
                   <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="p-6 text-xs text-slate-500 font-medium whitespace-nowrap">
-                      {new Date(log.changed_at).toLocaleString()}
+                      {new Date(log.changed_at + 'Z').toLocaleString()}
                     </td>
                     <td className="p-6">
                       <div className="flex items-center gap-3">
