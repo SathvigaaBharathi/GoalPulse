@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import RoleSwitcher from './RoleSwitcher';
 import CycleTimelineBanner from './CycleTimelineBanner';
-import { Activity, LogOut, LayoutDashboard, Target, Calendar, BarChart3, ShieldCheck, AlertCircle, FileText, Settings } from 'lucide-react';
+import { Activity, LogOut, LayoutDashboard, Target, Calendar, BarChart3, ShieldCheck, AlertCircle, FileText, Settings, Network } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useAuthStore();
@@ -52,6 +52,9 @@ const Layout = () => {
       <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-2 -mb-px overflow-x-auto no-scrollbar">
+            <button onClick={() => navigate('/cascade')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/cascade' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+              <Network size={16}/> Goal Tree
+            </button>
             {user.role === 'employee' && (
               <>
                 <button onClick={() => navigate('/employee/goals')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/employee/goals') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>

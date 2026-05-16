@@ -321,4 +321,108 @@ router.post('/:id/unlock', requireAuth, requireRole(['admin']), (req, res) => {
   }
 });
 
+// CASCADE VIEW: Get flat array of goals
+router.get('/cascade', requireAuth, (req, res) => {
+  try {
+    const { cycleId } = req.query;
+    if (!cycleId) return res.status(400).json({ error: 'cycleId is required' });
+
+    let goals = db.prepare(`
+      SELECT g.id, g.title, g.parent_goal_id as parentGoalId,
+             u.id as ownerId, u.name as ownerName, u.role as ownerRole, t.name as thrustArea,
+             (
+               SELECT MAX(a.actual_value) 
+               FROM achievements a 
+               WHERE a.goal_id = g.id
+             ) as actualValue,
+             g.target_value as targetValue,
+             g.uom_type as uomType
+      FROM goals g
+      JOIN goal_sheets s ON g.sheet_id = s.id
+      JOIN users u ON s.employee_id = u.id
+      LEFT JOIN thrust_areas t ON g.thrust_area_id = t.id
+      WHERE s.cycle_id = ?
+    `).all(cycleId);
+    
+    // Filter by role
+    if (req.user.role === 'manager') {
+      const allowedUserIds = [req.user.userId, ...db.prepare('SELECT id FROM users WHERE manager_id = ?').all(req.user.userId).map(u => u.id)];
+      goals = goals.filter(g => allowedUserIds.includes(g.ownerId));
+    } else if (req.user.role === 'employee') {
+      const ownGoals = goals.filter(g => g.ownerId === req.user.userId);
+      const allowedGoalIds = new Set(ownGoals.map(g => g.id));
+      
+      ownGoals.forEach(g => {
+        let currentParentId = g.parentGoalId;
+        while (currentParentId) {
+          allowedGoalIds.add(currentParentId);
+          const parent = goals.find(pg => pg.id === currentParentId);
+          currentParentId = parent ? parent.parentGoalId : null;
+        }
+      });
+      goals = goals.filter(g => allowedGoalIds.has(g.id));
+    }
+
+    const getScore = (uom, actual, target) => {
+      if (actual === null || target === 0 || !target) return 0;
+      if (uom === 'zero') return actual === 0 ? 100 : 0;
+      if (uom === 'timeline') return 0;
+      if (uom === 'min_numeric' || uom === 'min_percent') return Math.min((actual / target) * 100, 150);
+      if (uom === 'max_numeric' || uom === 'max_percent') return Math.min((target / actual) * 100, 150);
+      return 0;
+    };
+
+    const result = goals.map(g => ({
+      id: g.id,
+      title: g.title,
+      ownerName: g.ownerName,
+      ownerRole: g.ownerRole,
+      thrustArea: g.thrustArea,
+      parentGoalId: g.parentGoalId,
+      progressScore: Math.round(getScore(g.uomType, g.actualValue, g.targetValue))
+    }));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ADMIN/MANAGER: Link parent goal
+router.post('/:id/link-parent', requireAuth, requireRole(['admin', 'manager']), (req, res) => {
+  try {
+    const { parentGoalId } = req.body;
+    const goalId = parseInt(req.params.id);
+    
+    if (goalId === parentGoalId) return res.status(400).json({ error: 'Cannot link to self' });
+
+    if (parentGoalId !== null) {
+      const parent = db.prepare('SELECT id, parent_goal_id FROM goals WHERE id = ?').get(parentGoalId);
+      if (!parent) return res.status(404).json({ error: 'Parent goal not found' });
+      
+      // Prevent circular links
+      let currentParentId = parent.parent_goal_id;
+      while (currentParentId) {
+        if (currentParentId === goalId) {
+          return res.status(400).json({ error: 'Circular link detected' });
+        }
+        const nextParent = db.prepare('SELECT parent_goal_id FROM goals WHERE id = ?').get(currentParentId);
+        currentParentId = nextParent ? nextParent.parent_goal_id : null;
+      }
+    }
+
+    const oldGoal = db.prepare('SELECT parent_goal_id FROM goals WHERE id = ?').get(goalId);
+    if (!oldGoal) return res.status(404).json({ error: 'Goal not found' });
+    
+    db.prepare('UPDATE goals SET parent_goal_id = ? WHERE id = ?').run(parentGoalId, goalId);
+    
+    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('goal', ?, ?, 'goal_linked', ?, ?)");
+    audit.run(goalId, req.user.userId, JSON.stringify({ parent_goal_id: oldGoal.parent_goal_id }), JSON.stringify({ parent_goal_id: parentGoalId }));
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

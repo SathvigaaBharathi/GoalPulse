@@ -16,6 +16,7 @@ import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
 import CycleManager from './pages/admin/CycleManager';
 import CheckIn from './pages/employee/CheckIn';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
+import CascadeView from './pages/shared/CascadeView';
 
 function App() {
   const { user } = useAuthStore();
@@ -32,6 +33,8 @@ function App() {
         {/* Protected Routes wrapped in Layout */}
         <Route element={<Layout />}>
           
+          <Route path="/cascade" element={<CascadeView />} />
+
           <Route path="/employee/*" element={
             <RoleGuard allowedRoles={['employee']}>
               <Routes>

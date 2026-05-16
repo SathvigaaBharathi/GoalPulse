@@ -58,10 +58,12 @@ CREATE TABLE IF NOT EXISTS goals (
   is_shared INTEGER DEFAULT 0,
   shared_from_goal_id INTEGER,
   is_locked INTEGER DEFAULT 0,
+  parent_goal_id INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(sheet_id) REFERENCES goal_sheets(id),
   FOREIGN KEY(thrust_area_id) REFERENCES thrust_areas(id),
-  FOREIGN KEY(shared_from_goal_id) REFERENCES goals(id)
+  FOREIGN KEY(shared_from_goal_id) REFERENCES goals(id),
+  FOREIGN KEY(parent_goal_id) REFERENCES goals(id)
 );
 
 CREATE TABLE IF NOT EXISTS achievements (
