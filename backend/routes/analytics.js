@@ -16,7 +16,7 @@ router.get('/overview', requireAuth, requireRole(['admin']), (req, res) => {
       { name: 'Q4', submitted: 0, pending: 0 }
     ];
 
-    const sheets = db.prepare('SELECT id FROM goal_sheets WHERE cycle_id = ? AND status = "approved"').all(cycleId);
+    const sheets = db.prepare("SELECT id FROM goal_sheets WHERE cycle_id = ? AND status = 'approved'").all(cycleId);
     const totalSheets = sheets.length;
 
     for (let i = 0; i < 4; i++) {
