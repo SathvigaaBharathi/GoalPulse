@@ -9,7 +9,7 @@ const AchievementReport = () => {
   const [filters, setFilters] = useState({ cycleId: '', department: '', quarter: '', status: '' });
   const [cycles, setCycles] = useState([]);
   const [previewData, setPreviewData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCycles = async () => {
@@ -29,26 +29,26 @@ const AchievementReport = () => {
   }, [token]);
 
 
-  const fetchPreview = async () => {
-    setLoading(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const params = new URLSearchParams(filters);
-      const res = await fetch(`${apiUrl}/api/reports/achievement?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setPreviewData(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    if (!filters.cycleId) return;
+    const fetchPreview = async () => {
+      setLoading(true);
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const params = new URLSearchParams(filters);
+        const res = await fetch(`${apiUrl}/api/reports/achievement?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setPreviewData(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPreview();
-  }, [filters, token]);
+  }, [filters.cycleId, filters.department, filters.quarter, filters.status, token]);
 
   const handleExport = (format) => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
