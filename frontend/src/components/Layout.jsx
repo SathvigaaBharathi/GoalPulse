@@ -74,25 +74,25 @@ const Layout = () => {
             )}
             {user.role === 'admin' && (
               <>
-                <button onClick={() => navigate('/admin/dashboard')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/dashboard') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/dashboard')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/dashboard' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <LayoutDashboard size={16}/> Health Matrix
                 </button>
-                <button onClick={() => navigate('/admin/analytics')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/analytics') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/analytics')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/analytics' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <BarChart3 size={16}/> Intelligence
                 </button>
-                <button onClick={() => navigate('/admin/reports')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/reports') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/reports')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/reports' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <FileText size={16}/> Reports
                 </button>
-                <button onClick={() => navigate('/admin/cycles')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/cycles') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/cycles')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/cycles' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <Settings size={16}/> Cycle Manager
                 </button>
-                <button onClick={() => navigate('/admin/org')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/org') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/org')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/org' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <Activity size={16}/> Org Governance
                 </button>
-                <button onClick={() => navigate('/admin/escalations')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/escalations') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/escalations')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/escalations' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <AlertCircle size={16}/> Compliance
                 </button>
-                <button onClick={() => navigate('/admin/audit')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/audit') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                <button onClick={() => navigate('/admin/audit')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/audit' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <ShieldCheck size={16}/> Audit Trail
                 </button>
               </>

@@ -118,8 +118,11 @@ router.post('/comments', requireAuth, requireRole(['manager']), (req, res) => {
     const { goal_sheet_id, quarter, comment } = req.body;
     if (!comment || comment.trim() === '') return res.status(400).json({ error: 'Comment is required' });
 
-    db.prepare('INSERT INTO checkin_comments (goal_sheet_id, manager_id, quarter, comment) VALUES (?, ?, ?, ?)')
+    const resInsert = db.prepare('INSERT INTO checkin_comments (goal_sheet_id, manager_id, quarter, comment) VALUES (?, ?, ?, ?)')
       .run(goal_sheet_id, req.user.userId, quarter, comment);
+    
+    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('checkin_review', ?, ?, 'manager_comment', 'none', ?)");
+    audit.run(resInsert.lastInsertRowid, req.user.userId, JSON.stringify({ goal_sheet_id, quarter, comment }));
       
     res.json({ success: true });
   } catch (error) {
