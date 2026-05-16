@@ -77,6 +77,9 @@ const Layout = () => {
             )}
             {user.role === 'admin' && (
               <>
+                <button onClick={() => navigate('/admin/readiness')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/readiness' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <Zap size={16}/> Org Readiness
+                </button>
                 <button onClick={() => navigate('/admin/dashboard')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname === '/admin/dashboard' ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
                   <LayoutDashboard size={16}/> Health Matrix
                 </button>

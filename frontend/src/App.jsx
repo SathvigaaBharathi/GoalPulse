@@ -17,6 +17,7 @@ import CycleManager from './pages/admin/CycleManager';
 import CheckIn from './pages/employee/CheckIn';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
 import CascadeView from './pages/shared/CascadeView';
+import ReadinessDashboard from './pages/admin/ReadinessDashboard';
 
 function App() {
   const { user } = useAuthStore();
@@ -66,6 +67,7 @@ function App() {
                 <Route path="reports" element={<AchievementReport />} />
                 <Route path="audit" element={<AuditLog />} />
                 <Route path="escalations" element={<EscalationLog />} />
+                <Route path="readiness" element={<ReadinessDashboard />} />
               </Routes>
             </RoleGuard>
           } />

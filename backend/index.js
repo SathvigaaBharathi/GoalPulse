@@ -27,6 +27,8 @@ const analyticsRoutes = require('./routes/analytics');
 app.use('/api/analytics', analyticsRoutes);
 const employeeRoutes = require('./routes/employee');
 app.use('/api/employee', employeeRoutes);
+const readinessRoutes = require('./routes/readiness');
+app.use('/api/admin', readinessRoutes);
 
 // Init cron jobs
 require('./jobs/cron');
