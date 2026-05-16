@@ -11,13 +11,41 @@ const RoleSwitcher = () => {
   
   if (!user || !isDemo) return null;
 
-  const handleSwitch = (e) => {
+  const handleSwitch = async (e) => {
     const newRole = e.target.value;
-    switchRole(newRole);
-    // Navigate to the new role's dashboard
-    if (newRole === 'admin') navigate('/admin');
-    else if (newRole === 'manager') navigate('/manager');
-    else navigate('/employee');
+    
+    // Map role to demo email
+    let email = 'employee@goalpulse.demo';
+    if (newRole === 'admin') email = 'admin@goalpulse.demo';
+    else if (newRole === 'manager') email = 'manager@goalpulse.demo';
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      // Automatically login with the demo password
+      const res = await fetch(`${apiUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: 'Demo@123' })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        // Use the store's login method to update both user and token
+        useAuthStore.getState().login(data.user, data.token);
+        
+        // Navigate to the new role's dashboard
+        if (newRole === 'admin') navigate('/admin');
+        else if (newRole === 'manager') navigate('/manager');
+        else navigate('/employee');
+        
+        // Force reload to clear any stale state
+        window.location.reload();
+      } else {
+        alert('Demo user not found');
+      }
+    } catch (err) {
+      console.error('Failed to switch role', err);
+    }
   };
 
   return (
