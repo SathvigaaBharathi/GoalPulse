@@ -65,8 +65,33 @@ const GoalSheet = () => {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       await axios.post(`${apiUrl}/api/goals/sheet/submit`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheet();
+      toast.success('Goal sheet submitted successfully!');
     } catch (err) {
       toast.error('Failed to submit sheet');
+    }
+  };
+
+  const handleAutoDistribute = async () => {
+    if (data.goals.length === 0) return;
+    
+    // Calculate even distribution with rounding
+    const baseWeight = Math.floor(100 / data.goals.length);
+    let remainder = 100 % data.goals.length;
+    
+    setLoading(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      // Execute all PUT requests in parallel
+      await Promise.all(data.goals.map((g, index) => {
+        const weight = baseWeight + (index < remainder ? 1 : 0);
+        return axios.put(`${apiUrl}/api/goals/${g.id}`, { weightage: weight }, { headers: { Authorization: `Bearer ${token}` } });
+      }));
+      toast.success('Weightage automatically distributed to 100%!');
+      await fetchSheet();
+    } catch (err) {
+      toast.error('Failed to distribute weightage automatically');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,13 +111,23 @@ const GoalSheet = () => {
         <div className="flex items-center gap-4">
           <StatusBadge status={data.sheet.status} />
           {isEditable && (
-            <button 
-              onClick={handleSubmitSheet}
-              disabled={totalWeight !== 100}
-              className="bg-accent hover:bg-[#00a892] text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-            >
-              Submit for Approval
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleAutoDistribute}
+                disabled={data.goals.length === 0}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                title="Automatically divide 100% equally among all goals"
+              >
+                ✨ Auto-Distribute
+              </button>
+              <button 
+                onClick={handleSubmitSheet}
+                disabled={totalWeight !== 100}
+                className="bg-accent hover:bg-[#00a892] text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                Submit for Approval
+              </button>
+            </div>
           )}
         </div>
       </div>

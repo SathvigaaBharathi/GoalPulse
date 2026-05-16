@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
 import useCycleStore from '../../store/useCycleStore';
-import { Target, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { Target, CheckCircle2, Circle, AlertCircle, Activity, Flame } from 'lucide-react';
 
 const CheckIn = () => {
   const { token } = useAuthStore();
@@ -60,12 +60,60 @@ const CheckIn = () => {
     </div>;
   }
 
+  // Calculate Pulse Score and Streak
+  let pulseScore = 0;
+  let hasData = false;
+  
+  if (data.achievements && data.achievements.length > 0) {
+    hasData = true;
+    const scoreMap = { completed: 100, on_track: 80, not_started: 0 };
+    
+    // Use current quarter achievements, fallback to all achievements
+    const currentQAchievements = data.achievements.filter(a => a.quarter === currentQ);
+    const targetAchievements = currentQAchievements.length > 0 ? currentQAchievements : data.achievements;
+    
+    const totalScore = targetAchievements.reduce((sum, a) => sum + (scoreMap[a.status] || 0), 0);
+    pulseScore = Math.round(totalScore / targetAchievements.length);
+  }
+
+  // Calculate Check-in Streak
+  let streak = 0;
+  if (data.achievements) {
+    const loggedQuarters = [...new Set(data.achievements.map(a => a.quarter))].sort();
+    if (loggedQuarters.includes('Q1')) streak++;
+    if (streak === 1 && loggedQuarters.includes('Q2')) streak++;
+    if (streak === 2 && loggedQuarters.includes('Q3')) streak++;
+    if (streak === 3 && loggedQuarters.includes('Q4')) streak++;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-bold text-primary">{currentQ} Check-In</h1>
           <p className="text-gray-500 text-sm mt-1">Log your progress for the current quarter.</p>
+        </div>
+        <div className="flex gap-4">
+          {hasData && (
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200">
+              <div className={`p-2 rounded-lg ${pulseScore >= 80 ? 'bg-green-100 text-green-700' : pulseScore >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                <Activity size={20} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pulse Score</p>
+                <p className={`text-lg font-bold ${pulseScore >= 80 ? 'text-green-700' : pulseScore >= 50 ? 'text-yellow-700' : 'text-red-700'}`}>{pulseScore}%</p>
+              </div>
+            </div>
+          )}
+          {streak > 0 && (
+            <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-orange-100/50 px-4 py-2 rounded-xl shadow-sm border border-orange-200">
+              <Flame className="text-orange-500" size={24} fill="currentColor" />
+              <div>
+                <p className="text-xs font-bold text-orange-400/80 uppercase tracking-wider">Active Streak</p>
+                <p className="text-lg font-bold text-orange-600">{streak} Quarter{streak > 1 ? 's' : ''}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
