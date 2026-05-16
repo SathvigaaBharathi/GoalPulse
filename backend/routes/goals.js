@@ -99,8 +99,8 @@ router.put('/:id', requireAuth, (req, res) => {
     
     if (fields.length === 0) return res.json({ success: true });
 
-    // Enforce min 10% weightage
-    if (updates.weightage !== undefined && updates.weightage < 10) {
+    // Enforce min 10% weightage (only for regular employees)
+    if (updates.weightage !== undefined && updates.weightage < 10 && req.user.role === 'employee' && !goal.is_shared) {
       return res.status(400).json({ error: 'Minimum weightage per goal is 10%' });
     }
     
@@ -282,21 +282,53 @@ router.post('/push-shared', requireAuth, requireRole(['admin']), (req, res) => {
 
     db.transaction(() => {
       for (const empId of employeeIds) {
-        let sheet = db.prepare('SELECT id FROM goal_sheets WHERE employee_id = ? AND cycle_id = ?').get(empId, activeCycle.id);
+        let sheet = db.prepare('SELECT id, status FROM goal_sheets WHERE employee_id = ? AND cycle_id = ?').get(empId, activeCycle.id);
         if (!sheet) {
           const sRes = db.prepare("INSERT INTO goal_sheets (employee_id, cycle_id, status) VALUES (?, ?, 'draft')").run(empId, activeCycle.id);
-          sheet = { id: sRes.lastInsertRowid };
+          sheet = { id: sRes.lastInsertRowid, status: 'draft' };
         }
         
         // Enforce max 8 goals
         const existingCount = db.prepare('SELECT COUNT(*) as cnt FROM goals WHERE sheet_id = ?').get(sheet.id).cnt;
-        if (existingCount >= 8) continue; // Skip if already full
+        if (existingCount >= 8) continue;
 
         const gRes = insertGoal.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date, parent_goal_id || null);
         
+        // --- AUTO REBALANCE LOGIC ---
+        const allGoals = db.prepare('SELECT id, weightage, is_shared, is_locked FROM goals WHERE sheet_id = ?').all(sheet.id);
+        const totalWeight = allGoals.reduce((sum, g) => sum + g.weightage, 0);
+
+        if (totalWeight > 100) {
+          const lockedGoals = allGoals.filter(g => g.is_shared || g.is_locked);
+          const regularGoals = allGoals.filter(g => !(g.is_shared || g.is_locked));
+          
+          const reservedWeight = lockedGoals.reduce((sum, g) => sum + g.weightage, 0);
+          const targetForRegular = Math.max(0, 100 - reservedWeight);
+
+          if (regularGoals.length > 0) {
+            const baseWeight = Math.floor(targetForRegular / regularGoals.length);
+            let remainder = targetForRegular % regularGoals.length;
+
+            regularGoals.forEach((g, index) => {
+              const newWeight = baseWeight + (index < remainder ? 1 : 0);
+              db.prepare('UPDATE goals SET weightage = ? WHERE id = ?').run(newWeight, g.id);
+            });
+          }
+
+          // If the sheet was already approved, it is now "Invalidated" by the new goal and weight change.
+          // Move it back to 'submitted' so the manager MUST re-approve the new state.
+          if (sheet.status === 'approved') {
+            db.prepare("UPDATE goal_sheets SET status = 'submitted', approved_at = NULL, approved_by = NULL WHERE id = ?").run(sheet.id);
+            
+            // Audit the status change
+            db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('sheet', ?, ?, 'auto_rework_shared_push', 'approved', 'submitted')")
+              .run(sheet.id, req.user.userId);
+          }
+        }
+        
         // Audit the push
         const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('goal', ?, ?, 'shared_goal_push', 'none', ?)");
-        audit.run(gRes.lastInsertRowid, req.user.userId, JSON.stringify({ title, employee_id: empId, parent_goal_id }));
+        audit.run(gRes.lastInsertRowid, req.user.userId, JSON.stringify({ title, employee_id: empId, parent_goal_id, auto_rebalanced: totalWeight > 100 }));
       }
     })();
     
