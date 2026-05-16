@@ -95,31 +95,41 @@ const GoalSheet = () => {
   const handleAutoRebalance = async () => {
     if (data.goals.length === 0) return;
     
-    // 1. Calculate reserved weight (Locked/Shared goals)
-    const sharedGoals = data.goals.filter(g => g.is_shared || g.is_locked);
-    const regularGoals = data.goals.filter(g => !(g.is_shared || g.is_locked));
+    // 1. Identify which goals are editable
+    // Employees can only rebalance goals that aren't shared or locked
+    const lockedGoals = data.goals.filter(g => g.is_shared || g.is_locked);
+    const editableGoals = data.goals.filter(g => !(g.is_shared || g.is_locked));
     
-    const reservedWeight = sharedGoals.reduce((sum, g) => sum + g.weightage, 0);
-    const targetForRegular = Math.max(0, 100 - reservedWeight);
+    const reservedWeight = lockedGoals.reduce((sum, g) => sum + g.weightage, 0);
+    const targetForEditable = Math.max(0, 100 - reservedWeight);
 
-    // 2. Distribute remaining weight among regular goals
     setLoading(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       
-      if (regularGoals.length > 0) {
-        const baseWeight = Math.floor(targetForRegular / regularGoals.length);
-        let remainder = targetForRegular % regularGoals.length;
+      // 2. Distribute weight
+      if (editableGoals.length > 0) {
+        const baseWeight = Math.floor(targetForEditable / editableGoals.length);
+        let remainder = targetForEditable % editableGoals.length;
 
-        await Promise.all(regularGoals.map((g, index) => {
+        await Promise.all(editableGoals.map((g, index) => {
           const weight = baseWeight + (index < remainder ? 1 : 0);
           return axios.put(`${apiUrl}/api/goals/${g.id}`, { weightage: weight }, { headers: { Authorization: `Bearer ${token}` } });
         }));
       }
-      
-      toast.success('Weights rebalanced to 100%!');
+
+      // 3. If sheet was approved, it needs to be re-submitted because weights changed
+      if (data.sheet.status === 'approved') {
+        await axios.post(`${apiUrl}/api/goals/sheet/submit`, {}, { headers: { Authorization: `Bearer ${token}` } });
+        toast.success('Weights rebalanced and sheet re-submitted for approval!');
+      } else {
+        toast.success('Weights rebalanced to 100%!');
+      }
+
       await fetchSheet();
+      bumpAction();
     } catch (err) {
+      console.error('Rebalance error:', err);
       toast.error('Failed to rebalance: ' + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);

@@ -100,7 +100,7 @@ router.put('/:id', requireAuth, (req, res) => {
     if (fields.length === 0) return res.json({ success: true });
 
     // Enforce min 10% weightage (only for regular employees)
-    if (updates.weightage !== undefined && updates.weightage < 10 && req.user.role === 'employee' && !goal.is_shared) {
+    if (updates.weightage !== undefined && updates.weightage < 10 && req.user.role === 'employee') {
       return res.status(400).json({ error: 'Minimum weightage per goal is 10%' });
     }
     
