@@ -21,7 +21,12 @@ const reportsRoutes = require('./routes/reports');
 app.use('/api/reports', reportsRoutes);
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
-// Mount other routes later
+const devRoutes = require('./routes/dev');
+app.use('/api/dev', devRoutes);
+
+// Init cron jobs
+require('./jobs/cron');
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

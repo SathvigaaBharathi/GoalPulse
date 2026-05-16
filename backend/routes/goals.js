@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { sendMail } = require('../notifications/mailer');
+const templates = require('../notifications/templates');
 
 // Helper to get or create sheet for active cycle
 const getOrCreateSheet = (employeeId) => {
@@ -114,6 +116,14 @@ router.post('/sheet/submit', requireAuth, (req, res) => {
     if (totalWeight !== 100) return res.status(400).json({ error: 'Total weightage must be exactly 100%' });
     
     db.prepare("UPDATE goal_sheets SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP WHERE id = ?").run(sheet.id);
+    
+    // Notify Manager
+    const manager = db.prepare('SELECT m.email FROM users u JOIN users m ON u.manager_id = m.id WHERE u.id = ?').get(req.user.userId);
+    if (manager && manager.email) {
+      const tpl = templates.goalSheetSubmitted(req.user.name, goals.length);
+      sendMail({ to: manager.email, ...tpl }).catch(console.error);
+    }
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -165,6 +175,14 @@ router.post('/sheet/:id/approve', requireAuth, requireRole(['manager']), (req, r
 
     db.prepare("UPDATE goal_sheets SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ? WHERE id = ?").run(req.user.userId, req.params.id);
     db.prepare("UPDATE goals SET is_locked = 1 WHERE sheet_id = ?").run(req.params.id);
+    
+    // Notify Employee
+    const sheetInfo = db.prepare('SELECT u.email, c.name as cycle_name FROM goal_sheets s JOIN users u ON s.employee_id = u.id JOIN cycles c ON s.cycle_id = c.id WHERE s.id = ?').get(req.params.id);
+    if (sheetInfo && sheetInfo.email) {
+      const tpl = templates.goalSheetApproved(req.user.name, sheetInfo.cycle_name);
+      sendMail({ to: sheetInfo.email, ...tpl }).catch(console.error);
+    }
+    
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -63,6 +63,25 @@ const OrgManager = () => {
           </button>
         </form>
       </div>
+
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
+        <h2 className="text-lg font-bold mb-4 border-b pb-2">Developer Tools</h2>
+        <p className="text-sm text-gray-600 mb-4">Trigger the daily cron job manually for demo purposes (sends emails and processes escalations).</p>
+        <button 
+          onClick={async () => {
+            try {
+              const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+              await axios.post(`${apiUrl}/api/dev/trigger-cron`, {}, { headers: { Authorization: `Bearer ${token}` } });
+              alert('Cron jobs triggered successfully!');
+            } catch (e) {
+              alert('Failed to trigger cron');
+            }
+          }}
+          className="bg-primary hover:bg-[#152a46] text-white px-4 py-2 rounded font-medium transition-colors"
+        >
+          Run Daily Cron Jobs
+        </button>
+      </div>
     </div>
   );
 };
