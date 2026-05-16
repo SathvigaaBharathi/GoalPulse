@@ -77,7 +77,15 @@ const ApprovalQueue = () => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-8rem)]">
+    <div className="flex flex-col gap-4 h-[calc(100vh-6rem)]">
+      <div className="bg-blue-50/80 text-blue-800 p-4 rounded-lg border border-blue-100 flex gap-3 text-sm shadow-sm shrink-0">
+        <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+          <p className="font-semibold mb-1 text-blue-900">Manager Approval Workflow</p>
+          <p>Review the goal sheets submitted by your direct reports. Approving a sheet locks the goals in place so the employee can begin tracking their check-ins.</p>
+        </div>
+      </div>
+      <div className="flex gap-6 h-full overflow-hidden">
       {/* Sidebar List */}
       <div className="w-1/3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-y-auto">
         <div className="p-4 border-b bg-gray-50 sticky top-0">
@@ -129,6 +137,7 @@ const ApprovalQueue = () => {
             Select a sheet from the queue to review
           </div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -63,7 +63,7 @@ router.get('/overview', requireAuth, requireRole(['admin']), (req, res) => {
 // Endpoint to fetch all cycles for the dropdown
 router.get('/cycles', requireAuth, requireRole(['admin']), (req, res) => {
   try {
-    const cycles = db.prepare('SELECT id, name, is_active FROM cycles ORDER BY start_date DESC').all();
+    const cycles = db.prepare('SELECT id, name, is_active FROM cycles ORDER BY id DESC').all();
     res.json(cycles);
   } catch (error) {
     res.status(500).json({ error: error.message });

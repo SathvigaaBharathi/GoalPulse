@@ -96,6 +96,16 @@ const GoalSheet = () => {
         </div>
       </div>
 
+      {isEditable && (
+        <div className="mb-6 bg-blue-50/80 text-blue-800 p-4 rounded-lg border border-blue-100 flex gap-3 text-sm shadow-sm">
+          <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div>
+            <p className="font-semibold mb-1 text-blue-900">How to submit your goals</p>
+            <p>Add your goals below and assign a weightage percentage to each. The total weightage must equal exactly 100% before the "Submit for Approval" button will unlock.</p>
+          </div>
+        </div>
+      )}
+
       <WeightageValidator goals={data.goals} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
