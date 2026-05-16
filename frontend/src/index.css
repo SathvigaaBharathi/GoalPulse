@@ -4,6 +4,64 @@
 
 @layer base {
   body {
-    @apply bg-background text-primary font-sans;
+    @apply bg-background text-primary font-sans antialiased;
   }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+  
+  .glass-surface {
+    @apply bg-white/40 backdrop-blur-lg border border-white/30 shadow-sm;
+  }
+
+  .nav-item {
+    @apply relative transition-all duration-300 ease-in-out;
+  }
+
+  .nav-item::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-accent transition-all duration-300;
+  }
+
+  .nav-item:hover::after, .nav-item.active::after {
+    @apply w-full;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-[#152a46] text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-primary/20 transition-all active:scale-95;
+  }
+  
+  .btn-accent {
+    @apply bg-accent hover:bg-[#00a892] text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-accent/20 transition-all active:scale-95;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+}
+
+/* Entrance Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

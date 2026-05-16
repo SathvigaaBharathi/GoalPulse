@@ -56,6 +56,17 @@ router.post('/', requireAuth, (req, res) => {
       return res.status(403).json({ error: 'Sheet is locked' });
     }
 
+    // Enforce max 8 goals
+    const existingCount = db.prepare('SELECT COUNT(*) as cnt FROM goals WHERE sheet_id = ?').get(sheet.id).cnt;
+    if (existingCount >= 8) {
+      return res.status(400).json({ error: 'Maximum of 8 goals allowed per sheet' });
+    }
+
+    // Enforce min 10% weightage
+    if (weightage < 10) {
+      return res.status(400).json({ error: 'Minimum weightage per goal is 10%' });
+    }
+
     const insert = db.prepare(`
       INSERT INTO goals (sheet_id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -87,6 +98,11 @@ router.put('/:id', requireAuth, (req, res) => {
     );
     
     if (fields.length === 0) return res.json({ success: true });
+
+    // Enforce min 10% weightage
+    if (updates.weightage !== undefined && updates.weightage < 10) {
+      return res.status(400).json({ error: 'Minimum weightage per goal is 10%' });
+    }
     
     const placeholders = fields.map(f => `${f} = ?`).join(', ');
     const values = fields.map(f => updates[f]);
@@ -168,6 +184,36 @@ router.get('/sheet/:sheetId', requireAuth, requireRole(['manager']), (req, res) 
   }
 });
 
+// MANAGER: Return sheet for rework
+router.post('/sheet/:id/rework', requireAuth, requireRole(['manager']), (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason || reason.trim() === '') {
+      return res.status(400).json({ error: 'Rework reason is required' });
+    }
+
+    const sheet = db.prepare('SELECT * FROM goal_sheets WHERE id = ?').get(req.params.id);
+    if (!sheet) return res.status(404).json({ error: 'Sheet not found' });
+
+    db.prepare("UPDATE goal_sheets SET status = 'rework' WHERE id = ?").run(req.params.id);
+
+    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('sheet', ?, ?, 'sheet_rework', 'submitted', ?)");
+    audit.run(req.params.id, req.user.userId, JSON.stringify({ status: 'rework', reason }));
+
+    // Notify Employee
+    const sheetInfo = db.prepare('SELECT u.email, u.name FROM goal_sheets s JOIN users u ON s.employee_id = u.id WHERE s.id = ?').get(req.params.id);
+    const managerInfo = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.userId);
+    if (sheetInfo && sheetInfo.email) {
+      const tpl = templates.goalSheetRework(managerInfo.name, reason);
+      sendMail({ to: sheetInfo.email, ...tpl }).catch(console.error);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // MANAGER: Approve sheet
 router.post('/sheet/:id/approve', requireAuth, requireRole(['manager']), (req, res) => {
   try {
@@ -213,7 +259,16 @@ router.post('/push-shared', requireAuth, requireRole(['admin']), (req, res) => {
           const sRes = db.prepare("INSERT INTO goal_sheets (employee_id, cycle_id, status) VALUES (?, ?, 'draft')").run(empId, activeCycle.id);
           sheet = { id: sRes.lastInsertRowid };
         }
-        insertGoal.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date);
+        
+        // Enforce max 8 goals
+        const existingCount = db.prepare('SELECT COUNT(*) as cnt FROM goals WHERE sheet_id = ?').get(sheet.id).cnt;
+        if (existingCount >= 8) continue; // Skip if already full
+
+        const gRes = insertGoal.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date);
+        
+        // Audit the push
+        const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('goal', ?, ?, 'shared_goal_push', 'none', ?)");
+        audit.run(gRes.lastInsertRowid, req.user.userId, JSON.stringify({ title, employee_id: empId }));
       }
     })();
     

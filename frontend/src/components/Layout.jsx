@@ -1,12 +1,13 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import RoleSwitcher from './RoleSwitcher';
 import CycleTimelineBanner from './CycleTimelineBanner';
-import { Activity, LogOut } from 'lucide-react';
+import { Activity, LogOut, LayoutDashboard, Target, Calendar, BarChart3, ShieldCheck, AlertCircle, FileText, Settings } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -48,30 +49,52 @@ const Layout = () => {
         </div>
       </nav>
       
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 -mb-px">
+          <div className="flex space-x-2 -mb-px overflow-x-auto no-scrollbar">
             {user.role === 'employee' && (
               <>
-                <button onClick={() => navigate('/employee/goals')} className="border-b-2 border-accent text-primary font-medium py-3 px-1 text-sm">My Goals</button>
-                <button onClick={() => navigate('/employee/checkin')} className="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Check-In</button>
+                <button onClick={() => navigate('/employee/goals')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/employee/goals') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <Target size={16}/> My Strategic Goals
+                </button>
+                <button onClick={() => navigate('/employee/checkin')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/employee/checkin') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <Calendar size={16}/> Quarterly Check-In
+                </button>
               </>
             )}
             {user.role === 'manager' && (
               <>
-                <button onClick={() => navigate('/manager/queue')} className="border-b-2 border-accent text-primary font-medium py-3 px-1 text-sm">Approval Queue</button>
-                <button onClick={() => navigate('/manager/checkin')} className="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Team Check-In</button>
+                <button onClick={() => navigate('/manager/queue')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/manager/queue') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <ShieldCheck size={16}/> Approval Queue
+                </button>
+                <button onClick={() => navigate('/manager/checkin')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/manager/checkin') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <Activity size={16}/> Team Pulse
+                </button>
               </>
             )}
             {user.role === 'admin' && (
               <>
-                <button onClick={() => navigate('/admin/org')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Org Manager</button>
-                <button onClick={() => navigate('/admin/cycles')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Cycle Management</button>
-                <button onClick={() => navigate('/admin/dashboard')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Completion Matrix</button>
-                <button onClick={() => navigate('/admin/analytics')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Analytics</button>
-                <button onClick={() => navigate('/admin/reports')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Reports</button>
-                <button onClick={() => navigate('/admin/audit')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Audit Log</button>
-                <button onClick={() => navigate('/admin/escalations')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Escalations</button>
+                <button onClick={() => navigate('/admin/dashboard')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/dashboard') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <LayoutDashboard size={16}/> Health Matrix
+                </button>
+                <button onClick={() => navigate('/admin/analytics')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/analytics') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <BarChart3 size={16}/> Intelligence
+                </button>
+                <button onClick={() => navigate('/admin/reports')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/reports') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <FileText size={16}/> Reports
+                </button>
+                <button onClick={() => navigate('/admin/cycles')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/cycles') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <Settings size={16}/> Cycle Manager
+                </button>
+                <button onClick={() => navigate('/admin/org')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/org') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <Activity size={16}/> Org Governance
+                </button>
+                <button onClick={() => navigate('/admin/escalations')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/escalations') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <AlertCircle size={16}/> Compliance
+                </button>
+                <button onClick={() => navigate('/admin/audit')} className={`nav-item flex items-center gap-2 py-4 px-4 text-sm font-bold transition-all ${location.pathname.includes('/admin/audit') ? 'text-accent active' : 'text-slate-500 hover:text-slate-700'}`}>
+                  <ShieldCheck size={16}/> Audit Trail
+                </button>
               </>
             )}
           </div>

@@ -78,79 +78,127 @@ const CycleManager = () => {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-primary">Cycle Management</h1>
-        <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-700">Select Cycle:</label>
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-up">
+      <div className="flex justify-between items-center bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-sm">
+        <div>
+          <h1 className="text-3xl font-extrabold text-primary tracking-tight">Cycle Management</h1>
+          <p className="text-muted text-sm">Configure performance evaluation timelines and quarterly check-ins.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-bold text-slate-600">Active Database Context:</label>
           <select 
             value={selectedCycleId}
             onChange={handleSelectCycle}
-            className="border-gray-300 rounded-lg shadow-sm text-sm p-2 bg-white"
+            className="border-slate-200 rounded-xl shadow-sm text-sm p-3 bg-white focus:ring-2 focus:ring-accent outline-none transition-all cursor-pointer min-w-[240px]"
           >
-            <option value="new">+ Create New Cycle</option>
+            <option value="new">+ Create New Performance Cycle</option>
             {cycles.map(c => (
-              <option key={c.id} value={c.id}>{c.name} {c.is_active ? '(Active)' : ''}</option>
+              <option key={c.id} value={c.id}>Cycle #{c.id}: {c.name} {c.is_active ? '● ACTIVE' : ''}</option>
             ))}
           </select>
         </div>
       </div>
       
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-        <div className="mb-6 bg-blue-50/80 text-blue-800 p-4 rounded-lg border border-blue-100 flex gap-3 text-sm shadow-sm">
-          <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <div className="glass-card p-8 rounded-3xl overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-4">
+          {selectedCycleId !== 'new' && (
+            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
+              ID: {selectedCycleId}
+            </span>
+          )}
+        </div>
+
+        <div className="mb-8 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-6 rounded-2xl shadow-lg shadow-blue-900/20 flex gap-4 items-start relative overflow-hidden">
+          <div className="absolute -right-4 -bottom-4 opacity-10">
+             <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          </div>
+          <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
           <div>
-            <p className="font-semibold mb-1 text-blue-900">
-              {selectedCycleId === 'new' ? 'Define New Performance Window' : `Editing: ${formData.name}`}
+            <p className="font-bold text-lg mb-1">
+              {selectedCycleId === 'new' ? 'Initialize New Performance Cycle' : `Modify Cycle Configuration: ${formData.name}`}
             </p>
-            <p>
+            <p className="text-blue-100 text-sm leading-relaxed max-w-2xl">
               {selectedCycleId === 'new' 
-                ? 'Creating a new cycle will automatically set it as active.' 
-                : 'Modifying dates will immediately affect employee access windows.'}
+                ? 'Defining a new cycle will automatically sunset previous active cycles. Ensure all dates follow chronological order.' 
+                : 'Warning: Modifying dates for an active cycle will immediately re-calibrate access windows for all employees and managers.'}
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Cycle Name</label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="e.g. FY 2026-27" className="w-full p-2.5 border rounded-lg" />
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 ml-1">Cycle Name</label>
+              <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="e.g. FY 2026-27" className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none" />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Fiscal Year</label>
-              <input type="text" name="year" value={formData.year} onChange={handleChange} required placeholder="e.g. 2026" className="w-full p-2.5 border rounded-lg" />
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="font-semibold text-lg mb-4">Phase 1: Goal Setting</h3>
-            <div className="grid grid-cols-2 gap-6">
-              <div><label className="block text-sm text-gray-600 mb-1">Open Date</label><input type="date" name="phase1_open" value={formData.phase1_open} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              <div><label className="block text-sm text-gray-600 mb-1">Close Date</label><input type="date" name="phase1_close" value={formData.phase1_close} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 ml-1">Fiscal Year Label</label>
+              <input type="text" name="year" value={formData.year} onChange={handleChange} required placeholder="e.g. 2026" className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none" />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="font-semibold text-lg mb-4">Quarterly Check-ins</h3>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-              <div><label className="block text-sm text-gray-600 mb-1">Q1 Open</label><input type="date" name="q1_open" value={formData.q1_open} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              <div><label className="block text-sm text-gray-600 mb-1">Q1 Close</label><input type="date" name="q1_close" value={formData.q1_close} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              
-              <div><label className="block text-sm text-gray-600 mb-1">Q2 Open</label><input type="date" name="q2_open" value={formData.q2_open} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              <div><label className="block text-sm text-gray-600 mb-1">Q2 Close</label><input type="date" name="q2_close" value={formData.q2_close} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              
-              <div><label className="block text-sm text-gray-600 mb-1">Q3 Open</label><input type="date" name="q3_open" value={formData.q3_open} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              <div><label className="block text-sm text-gray-600 mb-1">Q3 Close</label><input type="date" name="q3_close" value={formData.q3_close} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              
-              <div><label className="block text-sm text-gray-600 mb-1">Q4 Open</label><input type="date" name="q4_open" value={formData.q4_open} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
-              <div><label className="block text-sm text-gray-600 mb-1">Q4 Close</label><input type="date" name="q4_close" value={formData.q4_close} onChange={handleChange} required className="w-full p-2.5 border rounded-lg" /></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
+              <h3 className="font-bold text-primary flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs">01</span>
+                Phase 1: Strategic Goal Setting
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="phase1_open" value={formData.phase1_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="phase1_close" value={formData.phase1_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-accent/5 rounded-2xl border border-accent/10 space-y-4">
+              <h3 className="font-bold text-accent flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-xs">02</span>
+                Quarter 01 Check-in Window
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q1_open" value={formData.q1_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q1_close" value={formData.q1_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
+              <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-xs">03</span>
+                Quarter 02 Check-in Window
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q2_open" value={formData.q2_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q2_close" value={formData.q2_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
+              <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-xs">04</span>
+                Quarter 03 Check-in Window
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q3_open" value={formData.q3_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q3_close" value={formData.q3_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4 lg:col-span-2">
+              <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-xs">05</span>
+                Quarter 04 Check-in Window
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q4_open" value={formData.q4_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+                <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q4_close" value={formData.q4_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
+              </div>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-gray-100 flex justify-end">
-            <button type="submit" disabled={loading} className="bg-primary hover:bg-[#152a46] text-white px-6 py-2.5 rounded-lg font-medium shadow-md">
-              {loading ? (selectedCycleId === 'new' ? 'Creating...' : 'Updating...') : (selectedCycleId === 'new' ? 'Create & Activate Cycle' : 'Update Cycle')}
+          <div className="pt-8 flex justify-end">
+            <button type="submit" disabled={loading} className={selectedCycleId === 'new' ? 'btn-accent' : 'btn-primary'}>
+              {loading ? (selectedCycleId === 'new' ? 'Creating...' : 'Updating...') : (selectedCycleId === 'new' ? 'Deploy New Cycle' : 'Commit Configuration Changes')}
             </button>
           </div>
         </form>

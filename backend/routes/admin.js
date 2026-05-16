@@ -48,4 +48,35 @@ router.get('/escalation-log', requireAuth, requireRole(['admin']), (req, res) =>
   }
 });
 
+// Escalation Rules CRUD
+router.get('/escalation-rules', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const rules = db.prepare('SELECT * FROM escalation_rules ORDER BY id').all();
+    res.json(rules);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/escalation-rules/:id', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const { threshold_days, is_active } = req.body;
+    db.prepare('UPDATE escalation_rules SET threshold_days = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+      .run(threshold_days, is_active ? 1 : 0, req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Users list for org manager
+router.get('/users', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const users = db.prepare('SELECT id, name, email, role, department, manager_id FROM users ORDER BY role, name').all();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
