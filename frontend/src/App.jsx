@@ -10,6 +10,7 @@ import OrgManager from './pages/admin/OrgManager';
 import CompletionDashboard from './pages/admin/CompletionDashboard';
 import AchievementReport from './pages/admin/AchievementReport';
 import AuditLog from './pages/admin/AuditLog';
+import EscalationLog from './pages/admin/EscalationLog';
 import CheckIn from './pages/employee/CheckIn';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
 
@@ -55,6 +56,7 @@ function App() {
                 <Route path="dashboard" element={<CompletionDashboard />} />
                 <Route path="reports" element={<AchievementReport />} />
                 <Route path="audit" element={<AuditLog />} />
+                <Route path="escalations" element={<EscalationLog />} />
               </Routes>
             </RoleGuard>
           } />

@@ -33,4 +33,19 @@ router.get('/audit-log', requireAuth, requireRole(['admin']), (req, res) => {
   }
 });
 
+router.get('/escalation-log', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const logs = db.prepare(`
+      SELECT e.*, u.name as target_user, r.rule_type
+      FROM escalation_log e
+      JOIN users u ON e.target_user_id = u.id
+      JOIN escalation_rules r ON e.rule_id = r.id
+      ORDER BY e.triggered_at DESC
+    `).all();
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
