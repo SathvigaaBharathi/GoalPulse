@@ -7,6 +7,8 @@ import Layout from './components/Layout';
 import GoalSheet from './pages/employee/GoalSheet';
 import ApprovalQueue from './pages/manager/ApprovalQueue';
 import OrgManager from './pages/admin/OrgManager';
+import CheckIn from './pages/employee/CheckIn';
+import TeamCheckIn from './pages/manager/TeamCheckIn';
 
 function App() {
   const { user } = useAuthStore();
@@ -27,6 +29,7 @@ function App() {
               <Routes>
                 <Route path="" element={<Navigate to="goals" replace />} />
                 <Route path="goals" element={<GoalSheet />} />
+                <Route path="checkin" element={<CheckIn />} />
               </Routes>
             </RoleGuard>
           } />
@@ -36,6 +39,7 @@ function App() {
               <Routes>
                 <Route path="" element={<Navigate to="queue" replace />} />
                 <Route path="queue" element={<ApprovalQueue />} />
+                <Route path="checkin" element={<TeamCheckIn />} />
               </Routes>
             </RoleGuard>
           } />

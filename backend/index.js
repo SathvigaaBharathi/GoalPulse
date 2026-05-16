@@ -13,6 +13,10 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 const goalsRoutes = require('./routes/goals');
 app.use('/api/goals', goalsRoutes);
+const cyclesRoutes = require('./routes/cycles');
+app.use('/api/cycles', cyclesRoutes);
+const checkinsRoutes = require('./routes/checkins');
+app.use('/api/checkins', checkinsRoutes);
 // Mount other routes later
 
 const PORT = process.env.PORT || 5000;

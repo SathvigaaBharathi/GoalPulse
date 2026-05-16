@@ -1,6 +1,7 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import RoleSwitcher from './RoleSwitcher';
+import CycleTimelineBanner from './CycleTimelineBanner';
 import { Activity, LogOut } from 'lucide-react';
 
 const Layout = () => {
@@ -46,6 +47,32 @@ const Layout = () => {
           </div>
         </div>
       </nav>
+      
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8 -mb-px">
+            {user.role === 'employee' && (
+              <>
+                <button onClick={() => navigate('/employee/goals')} className="border-b-2 border-accent text-primary font-medium py-3 px-1 text-sm">My Goals</button>
+                <button onClick={() => navigate('/employee/checkin')} className="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Check-In</button>
+              </>
+            )}
+            {user.role === 'manager' && (
+              <>
+                <button onClick={() => navigate('/manager/queue')} className="border-b-2 border-accent text-primary font-medium py-3 px-1 text-sm">Approval Queue</button>
+                <button onClick={() => navigate('/manager/checkin')} className="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-3 px-1 text-sm transition-colors">Team Check-In</button>
+              </>
+            )}
+            {user.role === 'admin' && (
+              <>
+                <button onClick={() => navigate('/admin/org')} className="border-b-2 border-accent text-primary font-medium py-3 px-1 text-sm">Org Manager</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <CycleTimelineBanner />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />

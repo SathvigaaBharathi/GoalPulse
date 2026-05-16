@@ -28,10 +28,17 @@ router.get('/sheet', requireAuth, (req, res) => {
       WHERE g.sheet_id = ?
     `).all(sheet.id);
     
+    // Fetch achievements for these goals
+    const achievements = db.prepare(`
+      SELECT a.* FROM achievements a
+      JOIN goals g ON a.goal_id = g.id
+      WHERE g.sheet_id = ?
+    `).all(sheet.id);
+
     // Also fetch thrust areas for dropdown
     const thrustAreas = db.prepare('SELECT * FROM thrust_areas').all();
     
-    res.json({ sheet, goals, thrustAreas });
+    res.json({ sheet, goals, achievements, thrustAreas });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
