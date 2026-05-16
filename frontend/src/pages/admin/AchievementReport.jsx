@@ -192,7 +192,7 @@ const AchievementReport = () => {
                           {row.status.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right font-black text-primary font-mono">{row.actual_value !== null ? row.actual_value : '—'}</td>
+                      <td className="px-6 py-4 text-right font-black text-primary font-mono">{row.actual_value !== null ? row.actual_value : '---'}</td>
                     </tr>
                   ))}
                 </tbody>
