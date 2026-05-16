@@ -473,7 +473,22 @@ router.get('/notifications', requireAuth, (req, res) => {
 // Notifications: Mark as read
 router.put('/notifications/:id/read', requireAuth, (req, res) => {
   try {
-    db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?').run(req.params.id, req.user.userId);
+    const { id } = req.params;
+    
+    // Get notification info for audit trail before updating
+    const notification = db.prepare('SELECT * FROM notifications WHERE id = ? AND user_id = ?').get(id, req.user.userId);
+    if (!notification) return res.status(404).json({ error: 'Notification not found' });
+
+    db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ?').run(id);
+
+    // Log to Audit Trail
+    if (notification.type === 'nudge') {
+      db.prepare(`
+        INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run('user', req.user.userId, req.user.userId, 'nudge_acknowledge', 'nudged', 'acknowledged');
+    }
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
