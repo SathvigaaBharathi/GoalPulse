@@ -88,7 +88,9 @@ router.put('/:id', requireAuth, (req, res) => {
     if (!goal) return res.status(404).json({ error: 'Not found' });
     
     // Auth logic: employee can edit if not locked. manager can edit weight/target inline.
-    if (goal.is_locked && req.user.role !== 'manager' && req.user.role !== 'admin') {
+    // ALLOW weightage updates on locked goals if they are NOT shared goals (to support auto-rebalance)
+    const isWeightageOnly = Object.keys(updates).length === 1 && updates.weightage !== undefined;
+    if (goal.is_locked && !isWeightageOnly && req.user.role !== 'manager' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Goal is locked' });
     }
 
@@ -99,7 +101,8 @@ router.put('/:id', requireAuth, (req, res) => {
     
     if (fields.length === 0) return res.json({ success: true });
 
-    // Enforce min 10% weightage (only for regular employees)
+    // Enforce min 10% weightage (only for regular employees manual edits)
+    // We relax this for Managers/Admins to allow the system to rebalance automatically
     if (updates.weightage !== undefined && updates.weightage < 10 && req.user.role === 'employee') {
       return res.status(400).json({ error: 'Minimum weightage per goal is 10%' });
     }

@@ -96,23 +96,25 @@ const GoalSheet = () => {
     if (data.goals.length === 0) return;
     
     // 1. Identify which goals are editable
-    // Employees can only rebalance goals that aren't shared or locked
-    const lockedGoals = data.goals.filter(g => g.is_shared || g.is_locked);
-    const editableGoals = data.goals.filter(g => !(g.is_shared || g.is_locked));
+    // We allow rebalancing any goal that is NOT a shared mandatory goal.
+    // Even if a goal is "locked" by a manager, we allow auto-rebalance to touch it 
+    // to fix organizational imbalances.
+    const sharedGoals = data.goals.filter(g => g.is_shared);
+    const regularGoals = data.goals.filter(g => !g.is_shared);
     
-    const reservedWeight = lockedGoals.reduce((sum, g) => sum + g.weightage, 0);
-    const targetForEditable = Math.max(0, 100 - reservedWeight);
+    const reservedWeight = sharedGoals.reduce((sum, g) => sum + g.weightage, 0);
+    const targetForRegular = Math.max(0, 100 - reservedWeight);
 
     setLoading(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       
       // 2. Distribute weight
-      if (editableGoals.length > 0) {
-        const baseWeight = Math.floor(targetForEditable / editableGoals.length);
-        let remainder = targetForEditable % editableGoals.length;
+      if (regularGoals.length > 0) {
+        const baseWeight = Math.floor(targetForRegular / regularGoals.length);
+        let remainder = targetForRegular % regularGoals.length;
 
-        await Promise.all(editableGoals.map((g, index) => {
+        await Promise.all(regularGoals.map((g, index) => {
           const weight = baseWeight + (index < remainder ? 1 : 0);
           return axios.put(`${apiUrl}/api/goals/${g.id}`, { weightage: weight }, { headers: { Authorization: `Bearer ${token}` } });
         }));
