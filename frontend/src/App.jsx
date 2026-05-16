@@ -11,6 +11,7 @@ import CompletionDashboard from './pages/admin/CompletionDashboard';
 import AchievementReport from './pages/admin/AchievementReport';
 import AuditLog from './pages/admin/AuditLog';
 import EscalationLog from './pages/admin/EscalationLog';
+import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
 import CheckIn from './pages/employee/CheckIn';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
 
@@ -54,6 +55,7 @@ function App() {
                 <Route path="" element={<Navigate to="dashboard" replace />} />
                 <Route path="org" element={<OrgManager />} />
                 <Route path="dashboard" element={<CompletionDashboard />} />
+                <Route path="analytics" element={<AnalyticsDashboard />} />
                 <Route path="reports" element={<AchievementReport />} />
                 <Route path="audit" element={<AuditLog />} />
                 <Route path="escalations" element={<EscalationLog />} />
