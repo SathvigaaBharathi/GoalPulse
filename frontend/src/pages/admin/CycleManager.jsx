@@ -18,6 +18,19 @@ const CycleManager = () => {
     q4_open: '', q4_close: ''
   });
 
+  const getActiveQuarter = (cycle) => {
+    if (!cycle || !cycle.is_active) return null;
+    const now = new Date().toISOString().split('T')[0];
+    if (now >= cycle.phase1_open && now <= cycle.phase1_close) return 'phase1';
+    if (now >= cycle.q1_open && now <= cycle.q1_close) return 'q1';
+    if (now >= cycle.q2_open && now <= cycle.q2_close) return 'q2';
+    if (now >= cycle.q3_open && now <= cycle.q3_close) return 'q3';
+    if (now >= cycle.q4_open && now <= cycle.q4_close) return 'q4';
+    return null;
+  };
+
+  const activeQuarter = cycles.length > 0 ? getActiveQuarter(cycles.find(c => c.is_active)) : null;
+
   const fetchCycles = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -140,56 +153,56 @@ const CycleManager = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
-              <h3 className="font-bold text-primary flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs">01</span>
-                Phase 1: Strategic Goal Setting
+            <div className={`p-6 rounded-2xl border transition-all ${activeQuarter === 'phase1' ? 'bg-green-50 border-green-200 shadow-lg shadow-green-900/5 scale-[1.02]' : 'bg-slate-50/50 border-slate-100'}`}>
+              <h3 className={`font-bold flex items-center gap-2 ${activeQuarter === 'phase1' ? 'text-green-600' : 'text-primary'}`}>
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${activeQuarter === 'phase1' ? 'bg-green-500 text-white' : 'bg-primary/10 text-primary'}`}>01</span>
+                Phase 1: Strategic Goal Setting {activeQuarter === 'phase1' && '● ACTIVE'}
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="phase1_open" value={formData.phase1_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="phase1_close" value={formData.phase1_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
               </div>
             </div>
 
-            <div className="p-6 bg-accent/5 rounded-2xl border border-accent/10 space-y-4">
-              <h3 className="font-bold text-accent flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-xs">02</span>
-                Quarter 01 Check-in Window
+            <div className={`p-6 rounded-2xl border transition-all ${activeQuarter === 'q1' ? 'bg-green-50 border-green-200 shadow-lg shadow-green-900/5 scale-[1.02]' : 'bg-slate-50/50 border-slate-100'}`}>
+              <h3 className={`font-bold flex items-center gap-2 ${activeQuarter === 'q1' ? 'text-green-600' : 'text-accent'}`}>
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${activeQuarter === 'q1' ? 'bg-green-500 text-white' : 'bg-accent/10 text-accent'}`}>02</span>
+                Quarter 01 Check-in Window {activeQuarter === 'q1' && '● ACTIVE'}
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q1_open" value={formData.q1_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q1_close" value={formData.q1_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
               </div>
             </div>
 
-            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
-              <h3 className="font-bold text-slate-700 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-xs">03</span>
-                Quarter 02 Check-in Window
+            <div className={`p-6 rounded-2xl border transition-all ${activeQuarter === 'q2' ? 'bg-green-50 border-green-200 shadow-lg shadow-green-900/5 scale-[1.02]' : 'bg-slate-50/50 border-slate-100'}`}>
+              <h3 className={`font-bold flex items-center gap-2 ${activeQuarter === 'q2' ? 'text-green-600' : 'text-slate-700'}`}>
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${activeQuarter === 'q2' ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>03</span>
+                Quarter 02 Check-in Window {activeQuarter === 'q2' && '● ACTIVE'}
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q2_open" value={formData.q2_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q2_close" value={formData.q2_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
               </div>
             </div>
 
-            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4">
-              <h3 className="font-bold text-slate-700 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-xs">04</span>
-                Quarter 03 Check-in Window
+            <div className={`p-6 rounded-2xl border transition-all ${activeQuarter === 'q3' ? 'bg-green-50 border-green-200 shadow-lg shadow-green-900/5 scale-[1.02]' : 'bg-slate-50/50 border-slate-100'}`}>
+              <h3 className={`font-bold flex items-center gap-2 ${activeQuarter === 'q3' ? 'text-green-600' : 'text-slate-700'}`}>
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${activeQuarter === 'q3' ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>04</span>
+                Quarter 03 Check-in Window {activeQuarter === 'q3' && '● ACTIVE'}
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q3_open" value={formData.q3_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q3_close" value={formData.q3_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
               </div>
             </div>
 
-            <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 space-y-4 lg:col-span-2">
-              <h3 className="font-bold text-slate-700 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center text-xs">05</span>
-                Quarter 04 Check-in Window
+            <div className={`p-6 rounded-2xl border transition-all lg:col-span-2 ${activeQuarter === 'q4' ? 'bg-green-50 border-green-200 shadow-lg shadow-green-900/5 scale-[1.01]' : 'bg-slate-50/50 border-slate-100'}`}>
+              <h3 className={`font-bold flex items-center gap-2 ${activeQuarter === 'q4' ? 'text-green-600' : 'text-slate-700'}`}>
+                <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${activeQuarter === 'q4' ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>05</span>
+                Quarter 04 Check-in Window {activeQuarter === 'q4' && '● ACTIVE'}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Opens On</label><input type="date" name="q4_open" value={formData.q4_open} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
                 <div><label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Closes On</label><input type="date" name="q4_close" value={formData.q4_close} onChange={handleChange} required className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent outline-none" /></div>
               </div>

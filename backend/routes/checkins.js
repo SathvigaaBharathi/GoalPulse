@@ -54,9 +54,15 @@ router.post('/achievements', requireAuth, (req, res) => {
     if (existing) {
       db.prepare('UPDATE achievements SET actual_value = ?, actual_date = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
         .run(actual_value, actual_date, status, existing.id);
+      
+      const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('achievement', ?, ?, 'checkin_update', 'existing', ?)");
+      audit.run(existing.id, req.user.userId, JSON.stringify({ quarter, actual_value, status }));
     } else {
-      db.prepare('INSERT INTO achievements (goal_id, quarter, actual_value, actual_date, status) VALUES (?, ?, ?, ?, ?)')
+      const res = db.prepare('INSERT INTO achievements (goal_id, quarter, actual_value, actual_date, status) VALUES (?, ?, ?, ?, ?)')
         .run(goal_id, quarter, actual_value, actual_date, status);
+      
+      const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('achievement', ?, ?, 'checkin_submit', 'none', ?)");
+      audit.run(res.lastInsertRowid, req.user.userId, JSON.stringify({ quarter, actual_value, status }));
     }
 
     res.json({ success: true });
