@@ -150,9 +150,13 @@ const GoalSheet = () => {
       <NextActionCard refreshKey={actionRefreshKey} />
 
       {/* Rework feedback banner */}
-      {data.sheet.status === 'rework' && (
-        <div className="mb-6 flex gap-3 p-4 rounded-xl border-2 border-orange-300 bg-orange-50 shadow-sm">
-          {/* ... (rework banner content remains same) ... */}
+      {data.sheet.status === 'rework' && reworkReason && (
+        <div className="mb-6 flex gap-3 p-4 rounded-xl border-2 border-orange-300 bg-orange-50 shadow-sm animate-fade-down">
+          <div className="text-orange-500 text-xl font-bold">⚠️</div>
+          <div>
+            <p className="font-bold text-orange-900">Sheet Returned for Revision</p>
+            <p className="text-orange-800 text-sm italic mt-1 font-medium">"{reworkReason}"</p>
+          </div>
         </div>
       )}
       <div className="flex justify-between items-center mb-6">
