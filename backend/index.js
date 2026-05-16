@@ -17,6 +17,10 @@ const cyclesRoutes = require('./routes/cycles');
 app.use('/api/cycles', cyclesRoutes);
 const checkinsRoutes = require('./routes/checkins');
 app.use('/api/checkins', checkinsRoutes);
+const reportsRoutes = require('./routes/reports');
+app.use('/api/reports', reportsRoutes);
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
 // Mount other routes later
 
 const PORT = process.env.PORT || 5000;

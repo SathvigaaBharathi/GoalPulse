@@ -7,6 +7,9 @@ import Layout from './components/Layout';
 import GoalSheet from './pages/employee/GoalSheet';
 import ApprovalQueue from './pages/manager/ApprovalQueue';
 import OrgManager from './pages/admin/OrgManager';
+import CompletionDashboard from './pages/admin/CompletionDashboard';
+import AchievementReport from './pages/admin/AchievementReport';
+import AuditLog from './pages/admin/AuditLog';
 import CheckIn from './pages/employee/CheckIn';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
 
@@ -47,8 +50,11 @@ function App() {
           <Route path="/admin/*" element={
             <RoleGuard allowedRoles={['admin']}>
               <Routes>
-                <Route path="" element={<Navigate to="org" replace />} />
+                <Route path="" element={<Navigate to="dashboard" replace />} />
                 <Route path="org" element={<OrgManager />} />
+                <Route path="dashboard" element={<CompletionDashboard />} />
+                <Route path="reports" element={<AchievementReport />} />
+                <Route path="audit" element={<AuditLog />} />
               </Routes>
             </RoleGuard>
           } />
