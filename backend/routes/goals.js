@@ -117,6 +117,9 @@ router.post('/sheet/submit', requireAuth, (req, res) => {
     
     db.prepare("UPDATE goal_sheets SET status = 'submitted', submitted_at = CURRENT_TIMESTAMP WHERE id = ?").run(sheet.id);
     
+    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('sheet', ?, ?, 'sheet_submit', 'draft', 'submitted')");
+    audit.run(sheet.id, req.user.userId);
+    
     // Notify Manager
     const manager = db.prepare('SELECT m.email FROM users u JOIN users m ON u.manager_id = m.id WHERE u.id = ?').get(req.user.userId);
     if (manager && manager.email) {
@@ -175,6 +178,9 @@ router.post('/sheet/:id/approve', requireAuth, requireRole(['manager']), (req, r
 
     db.prepare("UPDATE goal_sheets SET status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = ? WHERE id = ?").run(req.user.userId, req.params.id);
     db.prepare("UPDATE goals SET is_locked = 1 WHERE sheet_id = ?").run(req.params.id);
+    
+    const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('sheet', ?, ?, 'sheet_approve', 'submitted', 'approved')");
+    audit.run(req.params.id, req.user.userId);
     
     // Notify Employee
     const sheetInfo = db.prepare('SELECT u.email, c.name as cycle_name FROM goal_sheets s JOIN users u ON s.employee_id = u.id JOIN cycles c ON s.cycle_id = c.id WHERE s.id = ?').get(req.params.id);
