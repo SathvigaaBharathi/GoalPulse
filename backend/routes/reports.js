@@ -6,7 +6,7 @@ const Papa = require('papaparse');
 const xlsx = require('xlsx');
 
 // Achievement Report with server-side filters
-router.get('/achievement', requireAuth, requireRole(['admin', 'manager']), (req, res) => {
+router.get('/achievement', requireAuth, requireRole(['admin', 'manager']), async (req, res) => {
   try {
     const { cycleId, department, quarter, status, export: exportFormat } = req.query;
     
@@ -37,13 +37,45 @@ router.get('/achievement', requireAuth, requireRole(['admin', 'manager']), (req,
       res.attachment('achievement_report.csv');
       return res.send(csv);
     } else if (exportFormat === 'excel') {
-      const ws = xlsx.utils.json_to_sheet(rows);
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, "Achievements");
-      const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+      const ExcelJS = require('exceljs');
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Achievements');
+
+      sheet.columns = [
+        { header: 'Employee', key: 'employee', width: 25 },
+        { header: 'Goal Title', key: 'goal_title', width: 40 },
+        { header: 'Thrust Area', key: 'thrust_area', width: 25 },
+        { header: 'Type', key: 'uom_type', width: 15 },
+        { header: 'Target', key: 'target_value', width: 15 },
+        { header: 'Actual', key: 'actual_value', width: 15 },
+        { header: 'Status', key: 'status', width: 15 },
+        { header: 'Quarter', key: 'quarter', width: 12 },
+        { header: 'Manager', key: 'manager', width: 25 },
+      ];
+
+      // Style header
+      sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF152A46' } };
+      sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // Add rows
+      rows.forEach(row => {
+        const rowRef = sheet.addRow(row);
+        const statusCell = rowRef.getCell('status');
+        if (row.status === 'completed') {
+          statusCell.font = { color: { argb: 'FF1B9E4B' }, bold: true };
+        } else if (row.status === 'on_track') {
+          statusCell.font = { color: { argb: 'FFEAB308' }, bold: true };
+        } else {
+          statusCell.font = { color: { argb: 'FF9CA3AF' }, bold: true };
+        }
+      });
+
       res.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.attachment('achievement_report.xlsx');
-      return res.send(buf);
+      
+      const buffer = await workbook.xlsx.writeBuffer();
+      return res.send(buffer);
     }
 
     res.json(rows);
