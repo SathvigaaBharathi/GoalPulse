@@ -272,12 +272,12 @@ router.post('/sheet/:id/approve', requireAuth, requireRole(['manager']), (req, r
 // ADMIN: Push shared goal
 router.post('/push-shared', requireAuth, requireRole(['admin']), (req, res) => {
   try {
-    const { employeeIds, thrust_area_id, title, description, uom_type, target_value, target_date } = req.body;
+    const { employeeIds, thrust_area_id, title, description, uom_type, target_value, target_date, parent_goal_id } = req.body;
     const activeCycle = db.prepare('SELECT id FROM cycles WHERE is_active = 1').get();
     
     const insertGoal = db.prepare(`
-      INSERT INTO goals (sheet_id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage, is_shared, is_locked) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 10, 1, 0)
+      INSERT INTO goals (sheet_id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage, is_shared, is_locked, parent_goal_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, 10, 1, 0, ?)
     `);
 
     db.transaction(() => {
@@ -292,11 +292,11 @@ router.post('/push-shared', requireAuth, requireRole(['admin']), (req, res) => {
         const existingCount = db.prepare('SELECT COUNT(*) as cnt FROM goals WHERE sheet_id = ?').get(sheet.id).cnt;
         if (existingCount >= 8) continue; // Skip if already full
 
-        const gRes = insertGoal.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date);
+        const gRes = insertGoal.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date, parent_goal_id || null);
         
         // Audit the push
         const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('goal', ?, ?, 'shared_goal_push', 'none', ?)");
-        audit.run(gRes.lastInsertRowid, req.user.userId, JSON.stringify({ title, employee_id: empId }));
+        audit.run(gRes.lastInsertRowid, req.user.userId, JSON.stringify({ title, employee_id: empId, parent_goal_id }));
       }
     })();
     

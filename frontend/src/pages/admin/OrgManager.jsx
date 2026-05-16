@@ -63,21 +63,74 @@ const OrgManager = () => {
           </div>
 
           <form onSubmit={handlePush} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Target Stakeholders (ID String)</label>
-              <input 
-                type="text" value={pushData.employeeIds} onChange={e => setPushData({...pushData, employeeIds: e.target.value})}
-                placeholder="e.g. 101, 102, 105"
-                className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm font-mono"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Mandatory Goal Title</label>
-              <input 
-                type="text" value={pushData.title} onChange={e => setPushData({...pushData, title: e.target.value})}
-                placeholder="e.g. Security Compliance Certification"
-                className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Target Stakeholders (ID String)</label>
+                <input 
+                  type="text" value={pushData.employeeIds} onChange={e => setPushData({...pushData, employeeIds: e.target.value})}
+                  placeholder="e.g. 3, 4, 5" required
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm font-mono"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Mandatory Goal Title</label>
+                <input 
+                  type="text" value={pushData.title} onChange={e => setPushData({...pushData, title: e.target.value})}
+                  placeholder="e.g. Security Compliance Certification" required
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Description</label>
+                <textarea 
+                  value={pushData.description} onChange={e => setPushData({...pushData, description: e.target.value})}
+                  placeholder="Describe the goal..." required
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm min-h-[100px]"
+                ></textarea>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Thrust Area ID</label>
+                <input 
+                  type="number" value={pushData.thrust_area_id} onChange={e => setPushData({...pushData, thrust_area_id: e.target.value})}
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">UOM Type</label>
+                <select value={pushData.uom_type} onChange={e => setPushData({...pushData, uom_type: e.target.value})} className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm">
+                  <option value="min_numeric">Min Numeric</option>
+                  <option value="max_numeric">Max Numeric</option>
+                  <option value="min_percent">Min Percent</option>
+                  <option value="max_percent">Max Percent</option>
+                  <option value="zero">Zero Defect</option>
+                  <option value="timeline">Timeline</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Target Value</label>
+                <input 
+                  type="number" value={pushData.target_value} onChange={e => setPushData({...pushData, target_value: e.target.value})}
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Target Date</label>
+                <input 
+                  type="date" value={pushData.target_date} onChange={e => setPushData({...pushData, target_date: e.target.value})}
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm"
+                  required
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Parent Goal ID (Optional)</label>
+                <input 
+                  type="number" value={pushData.parent_goal_id || ''} onChange={e => setPushData({...pushData, parent_goal_id: e.target.value})}
+                  placeholder="Link to an Org-Level Goal ID"
+                  className="w-full p-4 bg-slate-50 border-transparent focus:bg-white focus:border-accent focus:ring-4 focus:ring-accent/10 rounded-2xl transition-all outline-none text-sm"
+                />
+              </div>
             </div>
             
             <button 

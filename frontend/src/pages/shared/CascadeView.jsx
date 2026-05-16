@@ -158,7 +158,7 @@ const CascadeView = () => {
         ) : treeData.length === 0 ? (
           <div className="text-center py-20 text-slate-400">No aligned goals found for this cycle.</div>
         ) : (
-          <div className="flex flex-col gap-10">
+          <div className="space-y-8">
             {treeData.map(root => (
               <GoalNode key={root.id} goal={root} onSelect={setSelectedGoal} />
             ))}
