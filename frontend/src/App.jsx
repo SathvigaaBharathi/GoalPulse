@@ -4,10 +4,9 @@ import Login from './pages/Login';
 import RoleGuard from './components/RoleGuard';
 import Layout from './components/Layout';
 
-// Dummy components for now to avoid errors
-const EmployeeDashboard = () => <div>Employee Dashboard</div>;
-const ManagerDashboard = () => <div>Manager Dashboard</div>;
-const AdminDashboard = () => <div>Admin Dashboard</div>;
+import GoalSheet from './pages/employee/GoalSheet';
+import ApprovalQueue from './pages/manager/ApprovalQueue';
+import OrgManager from './pages/admin/OrgManager';
 
 function App() {
   const { user } = useAuthStore();
@@ -26,7 +25,8 @@ function App() {
           <Route path="/employee/*" element={
             <RoleGuard allowedRoles={['employee']}>
               <Routes>
-                <Route path="" element={<EmployeeDashboard />} />
+                <Route path="" element={<Navigate to="goals" replace />} />
+                <Route path="goals" element={<GoalSheet />} />
               </Routes>
             </RoleGuard>
           } />
@@ -34,7 +34,8 @@ function App() {
           <Route path="/manager/*" element={
             <RoleGuard allowedRoles={['manager']}>
               <Routes>
-                <Route path="" element={<ManagerDashboard />} />
+                <Route path="" element={<Navigate to="queue" replace />} />
+                <Route path="queue" element={<ApprovalQueue />} />
               </Routes>
             </RoleGuard>
           } />
@@ -42,7 +43,8 @@ function App() {
           <Route path="/admin/*" element={
             <RoleGuard allowedRoles={['admin']}>
               <Routes>
-                <Route path="" element={<AdminDashboard />} />
+                <Route path="" element={<Navigate to="org" replace />} />
+                <Route path="org" element={<OrgManager />} />
               </Routes>
             </RoleGuard>
           } />
