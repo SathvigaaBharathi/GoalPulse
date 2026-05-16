@@ -45,7 +45,7 @@ insertThrust.run(6, 'Compliance & Risk', 'Ensure regulatory compliance');
 
 // 4. Goal Sheets
 const insertSheet = db.prepare('INSERT INTO goal_sheets (id, employee_id, cycle_id, status, submitted_at, approved_at, approved_by) VALUES (?, ?, ?, ?, ?, ?, ?)');
-insertSheet.run(1, 3, 1, 'approved', '2025-06-15 10:00:00', '2025-06-20 10:00:00', 2);
+insertSheet.run(1, 3, 1, 'draft', null, null, null);
 insertSheet.run(2, 4, 1, 'approved', '2025-06-16 10:00:00', '2025-06-20 10:00:00', 2);
 insertSheet.run(3, 5, 1, 'approved', '2025-06-17 10:00:00', '2025-06-20 10:00:00', 2);
 
@@ -54,11 +54,11 @@ const insertGoal = db.prepare(`INSERT INTO goals (id, sheet_id, thrust_area_id, 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
 // Employee 1 Goals
-insertGoal.run(1, 1, 1, 'Increase Q3 Sales', 'Push product X', 'max_numeric', 500000, null, 20, 0, null, 1);
-insertGoal.run(2, 1, 3, 'Improve CSAT Score', 'From 80 to 90', 'min_percent', 90, null, 20, 0, null, 1);
-insertGoal.run(3, 1, 5, 'Launch New Feature', 'Feature Y timeline', 'timeline', null, '2025-10-15', 20, 0, null, 1);
-insertGoal.run(4, 1, 6, 'Zero Compliance Breaches', 'Maintain 0', 'zero', 0, null, 20, 0, null, 1);
-insertGoal.run(5, 1, 2, 'Reduce Cloud Costs', 'Shared goal for all', 'min_percent', 15, null, 20, 1, null, 1);
+insertGoal.run(1, 1, 1, 'Increase Q3 Sales', 'Push product X', 'max_numeric', 500000, null, 20, 0, null, 0);
+insertGoal.run(2, 1, 3, 'Improve CSAT Score', 'From 80 to 90', 'min_percent', 90, null, 20, 0, null, 0);
+insertGoal.run(3, 1, 5, 'Launch New Feature', 'Feature Y timeline', 'timeline', null, '2025-10-15', 20, 0, null, 0);
+insertGoal.run(4, 1, 6, 'Zero Compliance Breaches', 'Maintain 0', 'zero', 0, null, 20, 0, null, 0);
+insertGoal.run(5, 1, 2, 'Reduce Cloud Costs', 'Shared goal for all', 'min_percent', 15, null, 20, 1, null, 0);
 
 // Employee 2 Goals
 insertGoal.run(6, 2, 1, 'Increase Q4 Sales', 'Push product Y', 'max_numeric', 600000, null, 20, 0, null, 1);

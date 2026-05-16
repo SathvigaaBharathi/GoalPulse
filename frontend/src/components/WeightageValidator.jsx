@@ -20,7 +20,7 @@ const WeightageValidator = ({ goals }) => {
       <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
         <div 
           className={`h-full transition-all duration-300 ${colorClass}`} 
-          style={{ width: \`\${Math.min(total, 100)}%\` }}
+          style={{ width: `${Math.min(total, 100)}%` }}
         />
       </div>
       {!isValid && (

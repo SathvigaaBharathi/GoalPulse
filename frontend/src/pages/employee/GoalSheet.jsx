@@ -62,7 +62,7 @@ const GoalSheet = () => {
     
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      await axios.post(`${apiUrl}/api/goals/sheet/${data.sheet.id}/submit`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${apiUrl}/api/goals/sheet/submit`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheet();
     } catch (err) {
       alert('Failed to submit sheet');
