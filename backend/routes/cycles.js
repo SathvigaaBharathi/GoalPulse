@@ -1,7 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
+
+router.post('/', requireAuth, requireRole(['admin']), (req, res) => {
+  try {
+    const { name, year, phase1_open, phase1_close, q1_open, q1_close, q2_open, q2_close, q3_open, q3_close, q4_open, q4_close } = req.body;
+    db.prepare('UPDATE cycles SET is_active = 0').run();
+    const insertCycle = db.prepare(`INSERT INTO cycles (name, year, phase1_open, phase1_close, q1_open, q1_close, q2_open, q2_close, q3_open, q3_close, q4_open, q4_close, is_active) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`);
+    const info = insertCycle.run(name, year, phase1_open, phase1_close, q1_open, q1_close, q2_open, q2_close, q3_open, q3_close, q4_open, q4_close);
+    res.json({ id: info.lastInsertRowid, message: 'Cycle created' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.get('/active/window', requireAuth, (req, res) => {
   try {

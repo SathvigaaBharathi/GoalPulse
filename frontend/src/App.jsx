@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import useAuthStore from './store/useAuthStore';
 import Login from './pages/Login';
 import RoleGuard from './components/RoleGuard';
@@ -12,6 +13,7 @@ import AchievementReport from './pages/admin/AchievementReport';
 import AuditLog from './pages/admin/AuditLog';
 import EscalationLog from './pages/admin/EscalationLog';
 import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
+import CycleManager from './pages/admin/CycleManager';
 import CheckIn from './pages/employee/CheckIn';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
 
@@ -20,6 +22,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster position="top-right" />
       <Routes>
         <Route 
           path="/" 
@@ -56,6 +59,7 @@ function App() {
                 <Route path="org" element={<OrgManager />} />
                 <Route path="dashboard" element={<CompletionDashboard />} />
                 <Route path="analytics" element={<AnalyticsDashboard />} />
+                <Route path="cycles" element={<CycleManager />} />
                 <Route path="reports" element={<AchievementReport />} />
                 <Route path="audit" element={<AuditLog />} />
                 <Route path="escalations" element={<EscalationLog />} />

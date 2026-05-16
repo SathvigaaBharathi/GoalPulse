@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
@@ -42,7 +43,7 @@ const GoalSheet = () => {
       setNewGoal({ title: '', description: '', thrust_area_id: '', uom_type: 'max_numeric', target_value: '', target_date: '', weightage: 10 });
       fetchSheet();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to add goal');
+      toast.error(err.response?.data?.error || 'Failed to add goal');
     }
   };
 
@@ -52,20 +53,20 @@ const GoalSheet = () => {
       await axios.put(`${apiUrl}/api/goals/${id}`, updates, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheet();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to update goal');
+      toast.error(err.response?.data?.error || 'Failed to update goal');
     }
   };
 
   const handleSubmitSheet = async () => {
     const totalWeight = data.goals.reduce((sum, g) => sum + g.weightage, 0);
-    if (totalWeight !== 100) return alert('Weightage must be 100%');
+    if (totalWeight !== 100) return toast.error('Weightage must be 100%');
     
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       await axios.post(`${apiUrl}/api/goals/sheet/submit`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheet();
     } catch (err) {
-      alert('Failed to submit sheet');
+      toast.error('Failed to submit sheet');
     }
   };
 

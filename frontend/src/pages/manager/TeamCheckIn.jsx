@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
@@ -32,7 +33,7 @@ const TeamCheckIn = () => {
   const handleMarkComplete = async (sheetId) => {
     const comment = comments[sheetId];
     if (!comment || comment.trim() === '') {
-      return alert('A check-in comment is required to mark it complete.');
+      return toast.error('A check-in comment is required to mark it complete.');
     }
     
     try {
@@ -43,10 +44,10 @@ const TeamCheckIn = () => {
         comment
       }, { headers: { Authorization: `Bearer ${token}` } });
       
-      alert('Check-in completed!');
+      toast.success('Check-in completed!');
       fetchTeam(); // refresh to show comment
     } catch (err) {
-      alert('Failed to save comment');
+      toast.error('Failed to save comment');
     }
   };
 

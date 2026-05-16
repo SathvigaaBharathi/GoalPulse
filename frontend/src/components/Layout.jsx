@@ -66,6 +66,7 @@ const Layout = () => {
             {user.role === 'admin' && (
               <>
                 <button onClick={() => navigate('/admin/org')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Org Manager</button>
+                <button onClick={() => navigate('/admin/cycles')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Cycle Management</button>
                 <button onClick={() => navigate('/admin/dashboard')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Completion Matrix</button>
                 <button onClick={() => navigate('/admin/analytics')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Analytics</button>
                 <button onClick={() => navigate('/admin/reports')} className="border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium py-3 px-1 text-sm transition-colors">Reports</button>

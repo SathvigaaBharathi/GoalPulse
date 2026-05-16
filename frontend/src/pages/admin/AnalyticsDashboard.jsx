@@ -75,45 +75,59 @@ const AnalyticsDashboard = () => {
           {/* Check-in Completion Trends */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 className="text-lg font-bold text-primary mb-6">Check-in Completion (Active Goals)</h2>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.completionByQuarter}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{fill: '#f8fafc'}} />
-                  <Legend />
-                  <Bar dataKey="submitted" name="Submitted" stackId="a" fill="#00a892" radius={[0, 0, 4, 4]} />
-                  <Bar dataKey="pending" name="Pending" stackId="a" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-72 flex items-center justify-center">
+              {data.completionByQuarter.reduce((acc, curr) => acc + curr.submitted + curr.pending, 0) === 0 ? (
+                <div className="text-center text-gray-400">
+                  <p className="font-semibold mb-1">No data available</p>
+                  <p className="text-sm">Goals must be submitted and approved to appear here.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.completionByQuarter}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip cursor={{fill: '#f8fafc'}} />
+                    <Legend />
+                    <Bar dataKey="submitted" name="Submitted" stackId="a" fill="#00a892" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="pending" name="Pending" stackId="a" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
           {/* Goal Status Distribution */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 className="text-lg font-bold text-primary mb-6">Current Goal Status (Latest Quarter)</h2>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data.distribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {data.distribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-72 flex items-center justify-center">
+              {data.distribution.length === 1 && data.distribution[0].name === 'No Data' ? (
+                <div className="text-center text-gray-400">
+                  <p className="font-semibold mb-1">No check-ins logged</p>
+                  <p className="text-sm">Employees need to complete a quarterly check-in first.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={data.distribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {data.distribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         </div>

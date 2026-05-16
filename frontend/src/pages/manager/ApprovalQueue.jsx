@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
@@ -44,13 +45,13 @@ const ApprovalQueue = () => {
       await axios.put(`${apiUrl}/api/goals/${id}`, updates, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheetDetails(selectedSheet.id);
     } catch (err) {
-      alert('Failed to update goal');
+      toast.error('Failed to update goal');
     }
   };
 
   const handleApprove = async () => {
     const totalWeight = goals.reduce((sum, g) => sum + g.weightage, 0);
-    if (totalWeight !== 100) return alert('Total weightage must be 100%');
+    if (totalWeight !== 100) return toast.error('Total weightage must be 100%');
     
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -58,17 +59,17 @@ const ApprovalQueue = () => {
       setSelectedSheet(null);
       fetchQueue();
     } catch (err) {
-      alert('Failed to approve');
+      toast.error('Failed to approve');
     }
   };
 
   const handleRework = async () => {
-    if (!reworkReason) return alert('Reason required');
+    if (!reworkReason) return toast.error('Reason required');
     // For simplicity, updating status via direct PUT or adding rework endpoint
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       // I didn't create a dedicated rework endpoint, but let's assume we update status or we could just alert for now or add it later.
-      alert('Rework functionality needs a dedicated backend endpoint. Skipped for brevity in this step.');
+      toast.error('Rework functionality needs a dedicated backend endpoint. Skipped for brevity in this step.');
     } catch (err) {
       console.error(err);
     }

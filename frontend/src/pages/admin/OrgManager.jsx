@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
@@ -25,9 +26,9 @@ const OrgManager = () => {
         employeeIds: pushData.employeeIds.split(',').map(n => Number(n.trim()))
       };
       await axios.post(`${apiUrl}/api/goals/push-shared`, payload, { headers: { Authorization: `Bearer ${token}` } });
-      alert('Shared goal pushed successfully!');
+      toast.success('Shared goal pushed successfully!');
     } catch (err) {
-      alert('Failed to push shared goal');
+      toast.error('Failed to push shared goal');
     } finally {
       setLoading(false);
     }
@@ -80,9 +81,9 @@ const OrgManager = () => {
             try {
               const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
               await axios.post(`${apiUrl}/api/dev/trigger-cron`, {}, { headers: { Authorization: `Bearer ${token}` } });
-              alert('Cron jobs triggered successfully!');
+              toast.success('Cron jobs triggered successfully!');
             } catch (e) {
-              alert('Failed to trigger cron');
+              toast.error('Failed to trigger cron');
             }
           }}
           className="bg-primary hover:bg-[#152a46] text-white px-4 py-2 rounded font-medium transition-colors"

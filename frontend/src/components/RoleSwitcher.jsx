@@ -41,7 +41,7 @@ const RoleSwitcher = () => {
         // Force reload to clear any stale state
         window.location.reload();
       } else {
-        alert('Demo user not found');
+        toast.error('Demo user not found');
       }
     } catch (err) {
       console.error('Failed to switch role', err);

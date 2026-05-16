@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import useAuthStore from '../../store/useAuthStore';
 import { Download } from 'lucide-react';
@@ -49,7 +50,7 @@ const AchievementReport = () => {
       a.click();
       a.remove();
     })
-    .catch(err => alert('Export failed'));
+    .catch(err => toast.error('Export failed'));
   };
 
   return (

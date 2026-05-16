@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
@@ -36,9 +37,9 @@ const CheckIn = () => {
       };
       await axios.post(`${apiUrl}/api/checkins/achievements`, payload, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheet(); // Refresh
-      alert('Achievement saved!');
+      toast.success('Achievement saved!');
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save');
+      toast.error(err.response?.data?.error || 'Failed to save');
     }
   };
 
