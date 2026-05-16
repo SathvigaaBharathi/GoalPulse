@@ -71,6 +71,12 @@ const AnalyticsDashboard = () => {
         </div>
       </div>
 
+      <div className="bg-slate-100/50 p-3 rounded-xl border border-slate-200 text-center">
+        <p className="text-slate-500 text-xs font-medium">
+          ℹ️ All scores shown are progress indicators for tracking purposes only. They do not constitute performance ratings or appraisal scores.
+        </p>
+      </div>
+
       {loading ? (
         <div className="p-12 text-center text-gray-500">Loading charts...</div>
       ) : (

@@ -101,7 +101,15 @@ const TeamCheckIn = () => {
                         <th className="p-4 font-semibold">Target</th>
                         <th className="p-4 font-semibold">Actual</th>
                         <th className="p-4 font-semibold">Status</th>
-                        <th className="p-4 font-semibold text-right">Score</th>
+                        <th className="p-4 font-semibold text-right flex items-center justify-end gap-1">
+                          Score
+                          <span 
+                            className="cursor-help text-gray-400 hover:text-primary normal-case"
+                            title="This is a progress indicator only. It does not represent a performance rating or appraisal score."
+                          >
+                            ⓘ
+                          </span>
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -121,8 +129,16 @@ const TeamCheckIn = () => {
                           </td>
                           <td className="p-4 text-right">
                             {g.score !== null ? (
-                              <div className="inline-flex items-center justify-center bg-gray-100 px-2 py-1 rounded font-bold text-sm min-w-[3rem]">
-                                {Math.round(g.score)}%
+                              <div className="inline-flex items-center gap-1">
+                                <div className="inline-flex items-center justify-center bg-gray-100 px-2 py-1 rounded font-bold text-sm min-w-[3rem]">
+                                  {Math.round(g.score)}%
+                                </div>
+                                <span 
+                                  className="cursor-help text-gray-400 text-xs"
+                                  title="This is a progress indicator only. It does not represent a performance rating or appraisal score."
+                                >
+                                  ⓘ
+                                </span>
                               </div>
                             ) : (
                               <span className="text-gray-400 text-sm">-</span>

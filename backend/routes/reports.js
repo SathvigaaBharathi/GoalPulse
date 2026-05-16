@@ -33,13 +33,22 @@ router.get('/achievement', requireAuth, requireRole(['admin', 'manager']), async
 
     if (exportFormat === 'csv') {
       const csv = Papa.unparse(rows);
+      const disclaimer = "# IMPORTANT: Progress scores in this report are tracking indicators only. They do not constitute performance ratings or appraisal scores.\n";
       res.header('Content-Type', 'text/csv');
       res.attachment('achievement_report.csv');
-      return res.send(csv);
+      return res.send(disclaimer + csv);
     } else if (exportFormat === 'excel') {
       const ExcelJS = require('exceljs');
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Achievements');
+
+      // Add Disclaimer Row
+      sheet.mergeCells('A1:I1');
+      const disclaimerRow = sheet.getRow(1);
+      disclaimerRow.getCell(1).value = 'IMPORTANT: Progress scores in this report are tracking indicators only. They do not constitute performance ratings or appraisal scores.';
+      disclaimerRow.getCell(1).font = { italic: true, color: { argb: 'FF666666' }, size: 10 };
+      disclaimerRow.getCell(1).alignment = { horizontal: 'center' };
+      disclaimerRow.height = 30;
 
       sheet.columns = [
         { header: 'Employee', key: 'employee', width: 25 },
@@ -53,12 +62,12 @@ router.get('/achievement', requireAuth, requireRole(['admin', 'manager']), async
         { header: 'Manager', key: 'manager', width: 25 },
       ];
 
-      // Style header
-      sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF152A46' } };
-      sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+      // Style header (now on row 2)
+      sheet.getRow(2).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      sheet.getRow(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF152A46' } };
+      sheet.getRow(2).alignment = { vertical: 'middle', horizontal: 'center' };
 
-      // Add rows
+      // Add rows starting from row 3
       rows.forEach(row => {
         const rowRef = sheet.addRow(row);
         const statusCell = rowRef.getCell('status');

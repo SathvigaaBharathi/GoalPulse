@@ -45,7 +45,15 @@ const GoalCard = ({ goal, onUpdate, isManagerView, isEditable }) => {
         </div>
         
         <div>
-          <span className="block text-xs text-gray-500 mb-1">Weightage</span>
+          <span className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+            Weightage
+            <span 
+              className="cursor-help text-gray-400 hover:text-primary transition-colors"
+              title="This is a progress indicator only. It does not represent a performance rating or appraisal score."
+            >
+              ⓘ
+            </span>
+          </span>
           {editing && (isManagerView || (!goal.is_locked)) ? (
             <input 
               type="number" 
