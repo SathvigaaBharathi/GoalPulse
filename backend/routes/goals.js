@@ -460,4 +460,24 @@ router.post('/:id/link-parent', requireAuth, requireRole(['admin', 'manager']), 
   }
 });
 
+// Notifications: Get user notifications
+router.get('/notifications', requireAuth, (req, res) => {
+  try {
+    const notifications = db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50').all(req.user.userId);
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications: Mark as read
+router.put('/notifications/:id/read', requireAuth, (req, res) => {
+  try {
+    db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?').run(req.params.id, req.user.userId);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

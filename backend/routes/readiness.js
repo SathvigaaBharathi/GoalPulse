@@ -135,9 +135,29 @@ router.get('/readiness', requireAuth, requireRole(['admin']), (req, res) => {
 });
 
 router.post('/nudge/:managerId', requireAuth, requireRole(['admin']), (req, res) => {
-  // In a real app, this would send an email. For demo, we just log it.
-  console.log(`NUDGE: Admin nudged Manager ${req.params.id}`);
-  res.json({ success: true, message: 'Nudge sent successfully' });
+  try {
+    const { managerId } = req.params;
+    const adminId = req.user.userId;
+    
+    // 1. Get some context for the notification
+    const cycle = db.prepare('SELECT name, phase1_close FROM cycles WHERE is_active = 1').get();
+    
+    const message = `URGENT: Admin has nudged you regarding pending goal approvals. The ${cycle.name} setup window closes on ${cycle.phase1_close}. Please take immediate action.`;
+
+    // 2. Insert Notification for Manager
+    db.prepare('INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)')
+      .run(managerId, 'nudge', message);
+
+    // 3. Log to Audit Trail
+    db.prepare(`
+      INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run('user', managerId, adminId, 'manager_nudge', 'active', 'nudged');
+
+    res.json({ success: true, message: 'Nudge sent successfully and logged to audit trail' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

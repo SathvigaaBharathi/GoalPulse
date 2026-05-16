@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 
 const RoleGuard = ({ allowedRoles, children }) => {
@@ -15,7 +15,7 @@ const RoleGuard = ({ allowedRoles, children }) => {
     return <Navigate to="/employee" replace />;
   }
 
-  return children;
+  return children || <Outlet />;
 };
 
 export default RoleGuard;

@@ -20,6 +20,8 @@ const ApprovalQueue = () => {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const headers = { Authorization: `Bearer ${token}` };
 
+  const [notifications, setNotifications] = useState([]);
+
   const fetchAll = async () => {
     try {
       const [pendingRes, approvedRes] = await Promise.all([
@@ -45,7 +47,29 @@ const ApprovalQueue = () => {
     }
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/goals/notifications`, { headers });
+      setNotifications(res.data.filter(n => n.type === 'nudge' && !n.is_read));
+    } catch (err) {
+      console.error('Failed to fetch notifications');
+    }
+  };
+
+  const handleDismissNudge = async (id) => {
+    try {
+      await axios.put(`${apiUrl}/api/goals/notifications/${id}/read`, {}, { headers });
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Nudge acknowledged');
+    } catch (err) {
+      toast.error('Failed to dismiss notification');
+    }
+  };
+
+  useEffect(() => { 
+    fetchAll(); 
+    fetchNotifications();
+  }, []);
 
   const handleUpdateGoal = async (id, updates) => {
     try {
@@ -100,6 +124,25 @@ const ApprovalQueue = () => {
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-6rem)]">
+      {/* Nudge Banner */}
+      {notifications.length > 0 && (
+        <div className="bg-rose-50 border-2 border-rose-200 p-4 rounded-xl flex items-center justify-between gap-4 animate-bounce-subtle shadow-lg shadow-rose-200/50">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-rose-500 text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-rose-500/20">⚡</div>
+            <div>
+              <h4 className="text-rose-900 font-black text-sm uppercase tracking-tighter">Admin Nudge Received</h4>
+              <p className="text-rose-800 text-xs font-medium max-w-2xl">{notifications[0].message}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => handleDismissNudge(notifications[0].id)}
+            className="bg-rose-900 text-white text-[10px] px-3 py-2 rounded-lg font-black uppercase hover:bg-rose-800 transition-all active:scale-95"
+          >
+            Acknowledge
+          </button>
+        </div>
+      )}
+
       <div className="bg-blue-50/80 text-blue-800 p-4 rounded-lg border border-blue-100 flex gap-3 text-sm shadow-sm shrink-0">
         <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <div>

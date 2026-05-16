@@ -56,21 +56,17 @@ function App() {
             </RoleGuard>
           } />
           
-          <Route path="/admin/*" element={
-            <RoleGuard allowedRoles={['admin']}>
-              <Routes>
-                <Route path="" element={<Navigate to="dashboard" replace />} />
-                <Route path="org" element={<OrgManager />} />
-                <Route path="dashboard" element={<CompletionDashboard />} />
-                <Route path="analytics" element={<AnalyticsDashboard />} />
-                <Route path="cycles" element={<CycleManager />} />
-                <Route path="reports" element={<AchievementReport />} />
-                <Route path="audit" element={<AuditLog />} />
-                <Route path="escalations" element={<EscalationLog />} />
-                <Route path="readiness" element={<ReadinessDashboard />} />
-              </Routes>
-            </RoleGuard>
-          } />
+          <Route path="/admin" element={<RoleGuard allowedRoles={['admin']} />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="readiness" element={<ReadinessDashboard />} />
+            <Route path="org" element={<OrgManager />} />
+            <Route path="dashboard" element={<CompletionDashboard />} />
+            <Route path="analytics" element={<AnalyticsDashboard />} />
+            <Route path="cycles" element={<CycleManager />} />
+            <Route path="reports" element={<AchievementReport />} />
+            <Route path="audit" element={<AuditLog />} />
+            <Route path="escalations" element={<EscalationLog />} />
+          </Route>
           
         </Route>
       </Routes>
