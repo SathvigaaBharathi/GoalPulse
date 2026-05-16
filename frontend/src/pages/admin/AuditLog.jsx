@@ -13,6 +13,7 @@ const EVENT_META = {
   manager_edit:      { label: 'Manager Edited Goal',        color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
   admin_unlock:      { label: 'Admin Unlocked Goal',        color: 'bg-danger/10 text-danger border-danger/20' },
   shared_goal_push:  { label: 'Shared Goal Pushed',         color: 'bg-primary/10 text-primary border-primary/20' },
+  employee_nudge:    { label: 'Manager Nudge Sent',          color: 'bg-slate-100 text-slate-600 border-slate-200' },
 };
 
 const parseJson = (str) => {
@@ -103,6 +104,13 @@ const PayloadSummary = ({ changeType, newValue, oldValue }) => {
           Pushed "<span className="font-bold">{parsed.title}</span>" to employee #{parsed.employee_id}
         </span>
       ) : <span className="text-slate-400 text-xs">Shared goal distributed</span>;
+
+    case 'employee_nudge':
+      return parsed ? (
+        <span className="text-xs text-slate-600">
+          Nudged manager after waiting <span className="font-bold">{parsed.waitingDays} days</span>
+        </span>
+      ) : <span className="text-slate-400 text-xs">Manager nudge sent</span>;
 
     default:
       return <span className="text-slate-400 text-xs font-mono truncate block max-w-xs">{newValue}</span>;

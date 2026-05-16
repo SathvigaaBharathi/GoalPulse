@@ -6,6 +6,7 @@ import GoalCard from '../../components/GoalCard';
 import WeightageValidator from '../../components/WeightageValidator';
 import StatusBadge from '../../components/StatusBadge';
 import { Plus } from 'lucide-react';
+import NextActionCard from '../../components/NextActionCard';
 
 const GoalSheet = () => {
   const { token } = useAuthStore();
@@ -103,6 +104,7 @@ const GoalSheet = () => {
 
   return (
     <div>
+      <NextActionCard />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-primary">My Goal Sheet</h1>
