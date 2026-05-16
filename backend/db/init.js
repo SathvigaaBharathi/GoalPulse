@@ -32,7 +32,7 @@ insertUser.run(5, 'Employee Three', 'employee3@goalpulse.demo', pwdHash, 'employ
 // 2. Cycles
 const insertCycle = db.prepare(`INSERT INTO cycles (id, name, year, phase1_open, phase1_close, q1_open, q1_close, q2_open, q2_close, q3_open, q3_close, q4_open, q4_close, is_active) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-insertCycle.run(1, 'FY 2025-26', '2025', '2025-05-01', '2025-06-30', '2025-07-01', '2025-08-31', '2025-10-01', '2025-11-30', '2026-01-01', '2026-02-28', '2026-03-01', '2026-04-30', 1);
+insertCycle.run(1, 'FY 2026-27', '2026', '2026-04-01', '2026-05-31', '2026-05-01', '2026-06-30', '2026-07-01', '2026-09-30', '2026-10-01', '2026-12-31', '2027-01-01', '2027-03-31', 1);
 
 // 3. Thrust Areas
 const insertThrust = db.prepare('INSERT INTO thrust_areas (id, name, description) VALUES (?, ?, ?)');
