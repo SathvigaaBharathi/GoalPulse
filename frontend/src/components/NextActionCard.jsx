@@ -20,7 +20,7 @@ const TYPE_ICONS = {
   all_clear:        <CheckCircle size={22} />,
 };
 
-const NextActionCard = () => {
+const NextActionCard = ({ refreshKey = 0 }) => {
   const { token } = useAuthStore();
   const navigate = useNavigate();
   const [action, setAction] = useState(null);
@@ -39,7 +39,7 @@ const NextActionCard = () => {
       }
     };
     fetch();
-  }, [token]);
+  }, [token, refreshKey]);
 
   const handleNudge = async (e) => {
     e.stopPropagation();

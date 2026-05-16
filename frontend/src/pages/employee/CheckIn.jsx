@@ -4,12 +4,14 @@ import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
 import useCycleStore from '../../store/useCycleStore';
 import { Target, CheckCircle2, Circle, AlertCircle, Activity, Flame } from 'lucide-react';
+import NextActionCard from '../../components/NextActionCard';
 
 const CheckIn = () => {
   const { token } = useAuthStore();
   const { window } = useCycleStore();
   const [data, setData] = useState({ sheet: null, goals: [], achievements: [] });
   const [loading, setLoading] = useState(true);
+  const [actionRefreshKey, setActionRefreshKey] = useState(0);
 
   const fetchSheet = async () => {
     try {
@@ -36,7 +38,8 @@ const CheckIn = () => {
         ...updates
       };
       await axios.post(`${apiUrl}/api/checkins/achievements`, payload, { headers: { Authorization: `Bearer ${token}` } });
-      fetchSheet(); // Refresh
+      fetchSheet();
+      setActionRefreshKey(k => k + 1);
       toast.success('Achievement saved!');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to save');
@@ -88,6 +91,7 @@ const CheckIn = () => {
 
   return (
     <div className="space-y-6">
+      <NextActionCard refreshKey={actionRefreshKey} />
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-bold text-primary">{currentQ} Check-In</h1>

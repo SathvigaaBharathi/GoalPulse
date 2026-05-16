@@ -12,6 +12,9 @@ const GoalSheet = () => {
   const { token } = useAuthStore();
   const [data, setData] = useState({ sheet: null, goals: [], thrustAreas: [] });
   const [loading, setLoading] = useState(true);
+  const [actionRefreshKey, setActionRefreshKey] = useState(0);
+
+  const bumpAction = () => setActionRefreshKey(k => k + 1);
   
   // New goal form state
   const [showForm, setShowForm] = useState(false);
@@ -43,6 +46,7 @@ const GoalSheet = () => {
       setShowForm(false);
       setNewGoal({ title: '', description: '', thrust_area_id: '', uom_type: 'max_numeric', target_value: '', target_date: '', weightage: 10 });
       fetchSheet();
+      bumpAction();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to add goal');
     }
@@ -66,6 +70,7 @@ const GoalSheet = () => {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       await axios.post(`${apiUrl}/api/goals/sheet/submit`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchSheet();
+      bumpAction();
       toast.success('Goal sheet submitted successfully!');
     } catch (err) {
       toast.error('Failed to submit sheet');
@@ -104,7 +109,7 @@ const GoalSheet = () => {
 
   return (
     <div>
-      <NextActionCard />
+      <NextActionCard refreshKey={actionRefreshKey} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-primary">My Goal Sheet</h1>
