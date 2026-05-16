@@ -1,5 +1,6 @@
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import useAuthStore from '../../store/useAuthStore';
 import { Download } from 'lucide-react';
 
