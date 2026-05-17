@@ -142,7 +142,7 @@ const Layout = () => {
                               <div className="flex-1 text-left">
                                 <p className="text-xs font-semibold text-slate-700 leading-normal">{n.message}</p>
                                 <p className="text-[10px] text-slate-400 mt-1 font-normal">
-                                  {n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                  {n.created_at ? new Date(n.created_at.replace(' ', 'T') + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
                                 </p>
                               </div>
                               <button
