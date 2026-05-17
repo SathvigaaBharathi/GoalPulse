@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { sendTeamsNotification } = require('../notifications/teams');
 
 // Calculate score based on UoM rules
 const calculateScore = (uom, actual, target, targetDateStr, actualDateStr) => {
@@ -63,6 +64,17 @@ router.post('/achievements', requireAuth, (req, res) => {
       
       const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('achievement', ?, ?, 'checkin_submit', 'none', ?)");
       audit.run(res.lastInsertRowid, req.user.userId, JSON.stringify({ quarter, actual_value, status }));
+    }
+
+    // Notify Manager via Teams Webhook
+    const manager = db.prepare('SELECT m.id, m.name, m.email FROM users u JOIN users m ON u.manager_id = m.id WHERE u.id = ?').get(req.user.userId);
+    if (manager) {
+      const employee = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.userId);
+      sendTeamsNotification('goal_update', {
+        employeeName: employee.name,
+        quarter,
+        status: status === 'completed' ? 'Completed' : status === 'on_track' ? 'On Track' : 'Not Started'
+      }).catch(console.error);
     }
 
     res.json({ success: true });

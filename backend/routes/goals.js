@@ -4,6 +4,7 @@ const db = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { sendMail } = require('../notifications/mailer');
 const templates = require('../notifications/templates');
+const { sendTeamsNotification } = require('../notifications/teams');
 
 // Helper to get or create sheet for active cycle
 const getOrCreateSheet = (employeeId) => {
@@ -142,7 +143,7 @@ router.post('/sheet/submit', requireAuth, (req, res) => {
     // Notify Manager
     const manager = db.prepare('SELECT m.id, m.email FROM users u JOIN users m ON u.manager_id = m.id WHERE u.id = ?').get(req.user.userId);
     if (manager) {
-      const employee = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.userId);
+      const employee = db.prepare('SELECT name, department FROM users WHERE id = ?').get(req.user.userId);
       db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'goal_submitted', ?)")
         .run(manager.id, `${employee.name} has submitted goals for review.`);
       
@@ -150,6 +151,15 @@ router.post('/sheet/submit', requireAuth, (req, res) => {
         const tpl = templates.goalSheetSubmitted(employee.name, goals.length);
         sendMail({ to: manager.email, ...tpl }).catch(console.error);
       }
+
+      // MS Teams Notification webhook
+      const cycleName = db.prepare('SELECT name FROM cycles WHERE id = ?').get(sheet.cycle_id)?.name;
+      sendTeamsNotification('goal_submit', {
+        employeeName: employee.name,
+        department: employee.department,
+        goalCount: goals.length,
+        cycleName
+      }).catch(console.error);
     }
 
     res.json({ success: true });
