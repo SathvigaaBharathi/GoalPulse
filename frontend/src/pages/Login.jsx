@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
 import { Activity, CheckCircle, TrendingUp, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useMsalWrapper } from '../auth/useMsalWrapper';
+import { loginRequest, IS_DEMO_MODE } from '../auth/msalConfig';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +14,59 @@ const Login = () => {
   
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
+  
+  const { instance, accounts } = useMsalWrapper();
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      const authenticateSSO = async () => {
+        try {
+          const activeAccount = accounts[0];
+          let idTokenClaims = {};
+          
+          if (!IS_DEMO_MODE) {
+            const response = await instance.acquireTokenSilent({
+              ...loginRequest,
+              account: activeAccount
+            });
+            idTokenClaims = response.idTokenClaims;
+          } else {
+            idTokenClaims = activeAccount.idTokenClaims;
+          }
+          
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+          const res = await axios.post(`${apiUrl}/api/auth/sso`, {
+            localAccountId: activeAccount.localAccountId,
+            username: activeAccount.username,
+            idTokenClaims
+          });
+          
+          login(res.data.user, res.data.token);
+          toast.success(`Signed in as ${res.data.user.name} via SSO`);
+          
+          if (IS_DEMO_MODE) {
+            instance.logout();
+          }
+          
+          if (res.data.user.role === 'admin') navigate('/admin');
+          else if (res.data.user.role === 'manager') navigate('/manager');
+          else navigate('/employee');
+        } catch (err) {
+          console.error('SSO Authentication Exchange Failed:', err);
+          toast.error(err.response?.data?.error || 'SSO Authentication failed');
+        }
+      };
+      
+      authenticateSSO();
+    }
+  }, [accounts, instance]);
+
+  const handleMicrosoftLogin = () => {
+    instance.loginRedirect(loginRequest).catch(err => {
+      console.error(err);
+      toast.error('Failed to initiate Microsoft Sign-In');
+    });
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -111,7 +166,34 @@ const Login = () => {
 
           <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl shadow-blue-900/5 border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
-            <p className="text-gray-500 mb-8">Please sign in to your account to continue.</p>
+            <p className="text-gray-500 mb-6">Please sign in to your account to continue.</p>
+
+            {/* Microsoft SSO Button */}
+            <button
+              type="button"
+              onClick={handleMicrosoftLogin}
+              className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-center gap-3 transition-all duration-200 cursor-pointer active:scale-98"
+            >
+              {/* Colored 4-square Microsoft SVG */}
+              <div className="grid grid-cols-2 gap-0.5 w-5 h-5 shrink-0">
+                <div className="bg-[#f25022] w-2 h-2 rounded-sm"></div>
+                <div className="bg-[#7fba00] w-2 h-2 rounded-sm"></div>
+                <div className="bg-[#00a4ef] w-2 h-2 rounded-sm"></div>
+                <div className="bg-[#ffb900] w-2 h-2 rounded-sm"></div>
+              </div>
+              <span className="text-sm font-semibold">
+                {IS_DEMO_MODE ? 'Sign in with Microsoft (Demo)' : 'Sign in with Microsoft'}
+              </span>
+            </button>
+
+            {/* Divider */}
+            <div className="relative flex py-4 items-center">
+              <div className="flex-grow border-t border-slate-200/80"></div>
+              <span className="flex-shrink mx-4 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                or continue with email
+              </span>
+              <div className="flex-grow border-t border-slate-200/80"></div>
+            </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div>

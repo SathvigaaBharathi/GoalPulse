@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT CHECK(role IN ('employee','manager','admin')),
   manager_id INTEGER,
   department TEXT,
+  azure_oid TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
