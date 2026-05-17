@@ -8,7 +8,7 @@
 
 GoalPulse is engineered using a lightweight, blazing-fast, and decoupled modular architecture. Below is the high-fidelity system blueprint illustrating the end-to-end data pipeline, auth wrappers, local cron orchestrations, and outgoing integration nodes:
 
-![GoalPulse System Architecture Diagram](docs/architecture.png)
+![GoalPulse System Architecture Diagram](docs/GoalPulse_Architecture.png)
 
 ---
 
