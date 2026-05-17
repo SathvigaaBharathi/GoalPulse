@@ -140,10 +140,16 @@ router.post('/sheet/submit', requireAuth, (req, res) => {
     audit.run(sheet.id, req.user.userId);
     
     // Notify Manager
-    const manager = db.prepare('SELECT m.email FROM users u JOIN users m ON u.manager_id = m.id WHERE u.id = ?').get(req.user.userId);
-    if (manager && manager.email) {
-      const tpl = templates.goalSheetSubmitted(req.user.name, goals.length);
-      sendMail({ to: manager.email, ...tpl }).catch(console.error);
+    const manager = db.prepare('SELECT m.id, m.email FROM users u JOIN users m ON u.manager_id = m.id WHERE u.id = ?').get(req.user.userId);
+    if (manager) {
+      const employee = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.userId);
+      db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'goal_submitted', ?)")
+        .run(manager.id, `${employee.name} has submitted goals for review.`);
+      
+      if (manager.email) {
+        const tpl = templates.goalSheetSubmitted(employee.name, goals.length);
+        sendMail({ to: manager.email, ...tpl }).catch(console.error);
+      }
     }
 
     res.json({ success: true });
@@ -232,11 +238,16 @@ router.post('/sheet/:id/rework', requireAuth, requireRole(['manager']), (req, re
     audit.run(req.params.id, req.user.userId, sheet.status, JSON.stringify({ status: 'rework', reason, recalledFromApproved: wasApproved }));
 
     // Notify Employee
-    const sheetInfo = db.prepare('SELECT u.email, u.name FROM goal_sheets s JOIN users u ON s.employee_id = u.id WHERE s.id = ?').get(req.params.id);
+    const sheetInfo = db.prepare('SELECT s.employee_id, u.email, u.name FROM goal_sheets s JOIN users u ON s.employee_id = u.id WHERE s.id = ?').get(req.params.id);
     const managerInfo = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.userId);
-    if (sheetInfo && sheetInfo.email) {
-      const tpl = templates.goalSheetRework(managerInfo.name, reason);
-      sendMail({ to: sheetInfo.email, ...tpl }).catch(console.error);
+    if (sheetInfo) {
+      db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'goal_rework', ?)")
+        .run(sheetInfo.employee_id, `Your goal sheet has been returned for rework by ${managerInfo.name}. Reason: "${reason}"`);
+      
+      if (sheetInfo.email) {
+        const tpl = templates.goalSheetRework(managerInfo.name, reason);
+        sendMail({ to: sheetInfo.email, ...tpl }).catch(console.error);
+      }
     }
 
     res.json({ success: true });
@@ -260,10 +271,16 @@ router.post('/sheet/:id/approve', requireAuth, requireRole(['manager']), (req, r
     audit.run(req.params.id, req.user.userId);
     
     // Notify Employee
-    const sheetInfo = db.prepare('SELECT u.email, c.name as cycle_name FROM goal_sheets s JOIN users u ON s.employee_id = u.id JOIN cycles c ON s.cycle_id = c.id WHERE s.id = ?').get(req.params.id);
-    if (sheetInfo && sheetInfo.email) {
-      const tpl = templates.goalSheetApproved(req.user.name, sheetInfo.cycle_name);
-      sendMail({ to: sheetInfo.email, ...tpl }).catch(console.error);
+    const sheetInfo = db.prepare('SELECT s.employee_id, u.email, c.name as cycle_name FROM goal_sheets s JOIN users u ON s.employee_id = u.id JOIN cycles c ON s.cycle_id = c.id WHERE s.id = ?').get(req.params.id);
+    const managerInfo = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.userId);
+    if (sheetInfo) {
+      db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'goal_approved', ?)")
+        .run(sheetInfo.employee_id, `Your goal sheet has been approved by ${managerInfo.name}.`);
+      
+      if (sheetInfo.email) {
+        const tpl = templates.goalSheetApproved(managerInfo.name, sheetInfo.cycle_name);
+        sendMail({ to: sheetInfo.email, ...tpl }).catch(console.error);
+      }
     }
     
     res.json({ success: true });
@@ -296,6 +313,10 @@ router.post('/push-shared', requireAuth, requireRole(['admin']), (req, res) => {
         if (existingCount >= 8) continue;
 
         const gRes = insertGoal.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date, parent_goal_id || null);
+        
+        // Insert In-App Notification
+        db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'shared_goal', ?)")
+          .run(empId, `A new shared goal "${title}" has been pushed to your goal sheet.`);
         
         // --- AUTO REBALANCE LOGIC ---
         const allGoals = db.prepare('SELECT id, weightage, is_shared, is_locked FROM goals WHERE sheet_id = ?').all(sheet.id);

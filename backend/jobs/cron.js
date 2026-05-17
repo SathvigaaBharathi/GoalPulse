@@ -138,6 +138,10 @@ const logEscalation = (ruleId, targetUserId, targetEntityId, entityType, userDet
     const res = db.prepare('INSERT INTO escalation_log (rule_id, target_user_id, target_entity_id, entity_type, escalation_level) VALUES (?, ?, ?, ?, 1)')
       .run(ruleId, targetUserId, targetEntityId, entityType);
     
+    // In-App Notification (Level 1 to Employee)
+    db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'escalation', 'Escalation Level 1: You have an overdue action in GoalPulse.')")
+      .run(targetUserId);
+
     // Notify Employee
     sendMail({ to: userDetails.email, subject: '[GoalPulse] Action Required (Escalation Level 1)', text: 'You have an overdue action in GoalPulse.' }).catch(console.error);
   } else if (log.escalation_level === 1) {
@@ -145,6 +149,13 @@ const logEscalation = (ruleId, targetUserId, targetEntityId, entityType, userDet
     const daysSinceTrigger = (new Date().getTime() - new Date(log.triggered_at).getTime()) / (1000 * 3600 * 24);
     if (daysSinceTrigger >= 3) {
       db.prepare('UPDATE escalation_log SET escalation_level = 2 WHERE id = ?').run(log.id);
+      
+      // In-App Notification (Level 2 to Manager)
+      if (userDetails.manager_id) {
+        db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'escalation', ?)")
+          .run(userDetails.manager_id, `Escalation Level 2: Direct report ${userDetails.name} has an overdue action.`);
+      }
+
       sendMail({ to: userDetails.manager_email, subject: `[GoalPulse] Action Required for ${userDetails.name} (Escalation Level 2)`, text: `${userDetails.name} has an overdue action.` }).catch(console.error);
     }
   } else if (log.escalation_level === 2) {
@@ -152,6 +163,14 @@ const logEscalation = (ruleId, targetUserId, targetEntityId, entityType, userDet
     const daysSinceTrigger = (new Date().getTime() - new Date(log.triggered_at).getTime()) / (1000 * 3600 * 24);
     if (daysSinceTrigger >= 7) {
       db.prepare('UPDATE escalation_log SET escalation_level = 3 WHERE id = ?').run(log.id);
+      
+      // In-App Notification (Level 3 to Admins)
+      const admins = db.prepare("SELECT id FROM users WHERE role = 'admin'").all();
+      for (const admin of admins) {
+        db.prepare("INSERT INTO notifications (user_id, type, message) VALUES (?, 'escalation', ?)")
+          .run(admin.id, `Escalation Level 3: Employee ${userDetails.name} has a severely overdue action.`);
+      }
+
       sendMail({ to: 'admin@goalpulse.demo', subject: `[GoalPulse] Admin Escalation for ${userDetails.name} (Level 3)`, text: `${userDetails.name} has a severely overdue action.` }).catch(console.error);
     }
   }

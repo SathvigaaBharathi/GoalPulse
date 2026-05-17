@@ -61,6 +61,9 @@ const ApprovalQueue = () => {
       await axios.put(`${apiUrl}/api/goals/notifications/${id}/read`, {}, { headers });
       setNotifications(prev => prev.filter(n => n.id !== id));
       toast.success('Nudge acknowledged');
+      
+      // Dispatch custom event to sync with header bell icon
+      window.dispatchEvent(new Event('notification-dismissed'));
     } catch (err) {
       toast.error('Failed to dismiss notification');
     }
@@ -69,6 +72,15 @@ const ApprovalQueue = () => {
   useEffect(() => { 
     fetchAll(); 
     fetchNotifications();
+
+    const handleDismissEvent = () => {
+      fetchNotifications();
+    };
+    window.addEventListener('notification-dismissed', handleDismissEvent);
+
+    return () => {
+      window.removeEventListener('notification-dismissed', handleDismissEvent);
+    };
   }, []);
 
   const handleUpdateGoal = async (id, updates) => {

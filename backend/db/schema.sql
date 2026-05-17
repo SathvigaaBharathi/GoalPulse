@@ -123,3 +123,14 @@ CREATE TABLE IF NOT EXISTS escalation_log (
   FOREIGN KEY(rule_id) REFERENCES escalation_rules(id),
   FOREIGN KEY(target_user_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  type TEXT,
+  message TEXT,
+  is_read INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
