@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 /**
  * Sends a Microsoft Teams adaptive card notification when a team member submits/updates goals.
  * Preserves deep-links for managers to navigate directly to the relevant dashboard.
@@ -77,7 +75,14 @@ async function sendTeamsNotification(event, data) {
 
   if (webhookUrl) {
     try {
-      await axios.post(webhookUrl, cardPayload);
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cardPayload)
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       console.log(`[Teams Notification] Successfully dispatched adaptive card webhook for event: ${event}`);
     } catch (err) {
       console.error(`[Teams Notification] Webhook POST failed:`, err.message);
