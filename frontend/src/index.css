@@ -124,3 +124,32 @@
   box-shadow: 0 4px 10px rgba(0, 194, 168, 0.35), 0 2px 4px rgba(0, 194, 168, 0.2);
 }
 
+/* Same-department link — existing style, no change */
+.connector-vertical {
+  border-left: 2px solid #00C2A8; /* matches teal */
+}
+
+/* Cross-department link — new dashed style */
+.connector-cross-dept {
+  border-left: 2px dashed #F59E0B;   /* amber, matches "at-risk" color */
+  position: relative;
+}
+
+/* Small badge on the cross-dept connector line */
+.connector-cross-dept::after {
+  content: "cross-dept";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  font-weight: 500;
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+

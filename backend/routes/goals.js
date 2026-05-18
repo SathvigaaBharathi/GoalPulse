@@ -415,7 +415,9 @@ router.get('/cascade', requireAuth, (req, res) => {
 
     let goals = db.prepare(`
       SELECT g.id, g.title, g.parent_goal_id as parentGoalId,
-             u.id as ownerId, u.name as ownerName, u.role as ownerRole, t.name as thrustArea,
+             u.id as ownerId, u.name as ownerName, u.role as ownerRole, u.department as ownerDept,
+             t.name as thrustArea,
+             t_parent.name as parentThrustArea,
              (
                SELECT MAX(a.actual_value) 
                FROM achievements a 
@@ -423,11 +425,16 @@ router.get('/cascade', requireAuth, (req, res) => {
              ) as actualValue,
              g.target_value as targetValue,
              g.uom_type as uomType,
-             g.score_cap as scoreCap
+             g.score_cap as scoreCap,
+             u_parent.department as parentOwnerDept
       FROM goals g
       JOIN goal_sheets s ON g.sheet_id = s.id
       JOIN users u ON s.employee_id = u.id
       LEFT JOIN thrust_areas t ON g.thrust_area_id = t.id
+      LEFT JOIN goals g_parent ON g.parent_goal_id = g_parent.id
+      LEFT JOIN goal_sheets s_parent ON g_parent.sheet_id = s_parent.id
+      LEFT JOIN users u_parent ON s_parent.employee_id = u_parent.id
+      LEFT JOIN thrust_areas t_parent ON g_parent.thrust_area_id = t_parent.id
       WHERE s.cycle_id = ?
     `).all(cycleId);
     
@@ -460,15 +467,34 @@ router.get('/cascade', requireAuth, (req, res) => {
       return 0;
     };
 
-    const result = goals.map(g => ({
-      id: g.id,
-      title: g.title,
-      ownerName: g.ownerName,
-      ownerRole: g.ownerRole,
-      thrustArea: g.thrustArea,
-      parentGoalId: g.parentGoalId,
-      progressScore: Math.round(getScore(g.uomType, g.actualValue, g.targetValue, g.scoreCap))
-    }));
+    const result = goals.map(g => {
+      const isCrossDept = g.parentGoalId !== null && g.ownerDept !== g.parentOwnerDept;
+      return {
+        id: g.id,
+        title: g.title,
+        ownerName: g.ownerName,
+        ownerRole: g.ownerRole,
+        thrustArea: g.thrustArea,
+        parentGoalId: g.parentGoalId,
+        progressScore: Math.round(getScore(g.uomType, g.actualValue, g.targetValue, g.scoreCap)),
+        ownerDept: g.ownerDept,
+        parentOwnerDept: g.parentOwnerDept || null,
+        parentThrustArea: g.parentThrustArea || null,
+        isCrossDept: !!isCrossDept
+      };
+    });
+
+    // Calculate crossDeptChildrenCount
+    const crossDeptCounts = {};
+    result.forEach(g => {
+      if (g.isCrossDept && g.parentGoalId) {
+        crossDeptCounts[g.parentGoalId] = (crossDeptCounts[g.parentGoalId] || 0) + 1;
+      }
+    });
+
+    result.forEach(g => {
+      g.crossDeptChildrenCount = crossDeptCounts[g.id] || 0;
+    });
 
     res.json(result);
   } catch (error) {
@@ -506,8 +532,34 @@ router.post('/:id/link-parent', requireAuth, requireRole(['admin', 'manager']), 
     
     const audit = db.prepare("INSERT INTO audit_log (entity_type, entity_id, changed_by, change_type, old_value, new_value) VALUES ('goal', ?, ?, 'goal_linked', ?, ?)");
     audit.run(goalId, req.user.userId, JSON.stringify({ parent_goal_id: oldGoal.parent_goal_id }), JSON.stringify({ parent_goal_id: parentGoalId }));
+
+    // Check if cross-department link
+    let isCrossDept = false;
+    let parentDept = null;
+    if (parentGoalId !== null) {
+      const owner = db.prepare(`
+        SELECT u.department 
+        FROM goals g
+        JOIN goal_sheets s ON g.sheet_id = s.id
+        JOIN users u ON s.employee_id = u.id
+        WHERE g.id = ?
+      `).get(goalId);
+      
+      const parentOwner = db.prepare(`
+        SELECT u.department 
+        FROM goals g
+        JOIN goal_sheets s ON g.sheet_id = s.id
+        JOIN users u ON s.employee_id = u.id
+        WHERE g.id = ?
+      `).get(parentGoalId);
+      
+      if (owner && parentOwner && owner.department !== parentOwner.department) {
+        isCrossDept = true;
+        parentDept = parentOwner.department;
+      }
+    }
     
-    res.json({ success: true });
+    res.json({ success: true, isCrossDept, parentDept });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
