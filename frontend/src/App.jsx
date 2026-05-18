@@ -15,6 +15,7 @@ import EscalationLog from './pages/admin/EscalationLog';
 import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
 import CycleManager from './pages/admin/CycleManager';
 import CheckIn from './pages/employee/CheckIn';
+import QuickUpdatePage from './pages/employee/QuickUpdatePage';
 import TeamCheckIn from './pages/manager/TeamCheckIn';
 import CascadeView from './pages/shared/CascadeView';
 import ReadinessDashboard from './pages/admin/ReadinessDashboard';
@@ -31,6 +32,12 @@ function App() {
           element={user ? <Navigate to={`/${user.role}`} replace /> : <Login />} 
         />
         
+        <Route path="/quick-update" element={
+          <RoleGuard allowedRoles={['employee']}>
+            <QuickUpdatePage />
+          </RoleGuard>
+        } />
+
         {/* Protected Routes wrapped in Layout */}
         <Route element={<Layout />}>
           

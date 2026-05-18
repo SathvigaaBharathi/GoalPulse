@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import RoleSwitcher from './RoleSwitcher';
+import ViewModeToggler from './ViewModeToggler';
 import CycleTimelineBanner from './CycleTimelineBanner';
 import { Activity, LogOut, LayoutDashboard, Target, Calendar, BarChart3, ShieldCheck, AlertCircle, FileText, Settings, Network, Zap, Bell, Check } from 'lucide-react';
 import axios from 'axios';
@@ -92,6 +93,7 @@ const Layout = () => {
             </div>
             
             <div className="flex items-center gap-4">
+              {user.role === 'employee' && <ViewModeToggler />}
               <RoleSwitcher />
               
               {/* Notification Bell */}
