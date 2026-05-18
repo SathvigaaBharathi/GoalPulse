@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS goals (
   shared_from_goal_id INTEGER,
   is_locked INTEGER DEFAULT 0,
   parent_goal_id INTEGER,
+  score_cap INTEGER DEFAULT 150,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(sheet_id) REFERENCES goal_sheets(id),
   FOREIGN KEY(thrust_area_id) REFERENCES thrust_areas(id),

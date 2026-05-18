@@ -50,7 +50,7 @@ router.get('/sheet', requireAuth, (req, res) => {
 // Add goal
 router.post('/', requireAuth, (req, res) => {
   try {
-    const { title, description, thrust_area_id, uom_type, target_value, target_date, weightage } = req.body;
+    let { title, description, thrust_area_id, uom_type, target_value, target_date, weightage, score_cap } = req.body;
     const sheet = getOrCreateSheet(req.user.userId);
     
     if (sheet.status !== 'draft' && sheet.status !== 'rework') {
@@ -68,11 +68,22 @@ router.post('/', requireAuth, (req, res) => {
       return res.status(400).json({ error: 'Minimum weightage per goal is 10%' });
     }
 
+    // Validate score_cap (must be integer between 100 and 150)
+    if (score_cap !== undefined && score_cap !== null) {
+      const capVal = parseInt(score_cap, 10);
+      if (isNaN(capVal) || capVal < 100 || capVal > 150) {
+        return res.status(400).json({ error: 'Max Score Cap must be an integer between 100% and 150%' });
+      }
+      score_cap = capVal;
+    } else {
+      score_cap = 150;
+    }
+
     const insert = db.prepare(`
-      INSERT INTO goals (sheet_id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO goals (sheet_id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage, score_cap) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    const info = insert.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage);
+    const info = insert.run(sheet.id, thrust_area_id, title, description, uom_type, target_value, target_date, weightage, score_cap);
     res.json({ id: info.lastInsertRowid });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -95,9 +106,18 @@ router.put('/:id', requireAuth, (req, res) => {
       return res.status(403).json({ error: 'Goal is locked' });
     }
 
+    // Validate score_cap if provided
+    if (updates.score_cap !== undefined && updates.score_cap !== null) {
+      const capVal = parseInt(updates.score_cap, 10);
+      if (isNaN(capVal) || capVal < 100 || capVal > 150) {
+        return res.status(400).json({ error: 'Max Score Cap must be an integer between 100% and 150%' });
+      }
+      updates.score_cap = capVal;
+    }
+
     // Prepare update query dynamically based on allowed fields
     const fields = Object.keys(updates).filter(k => 
-      ['title', 'description', 'thrust_area_id', 'uom_type', 'target_value', 'target_date', 'weightage'].includes(k)
+      ['title', 'description', 'thrust_area_id', 'uom_type', 'target_value', 'target_date', 'weightage', 'score_cap'].includes(k)
     );
     
     if (fields.length === 0) return res.json({ success: true });
@@ -402,7 +422,8 @@ router.get('/cascade', requireAuth, (req, res) => {
                WHERE a.goal_id = g.id
              ) as actualValue,
              g.target_value as targetValue,
-             g.uom_type as uomType
+             g.uom_type as uomType,
+             g.score_cap as scoreCap
       FROM goals g
       JOIN goal_sheets s ON g.sheet_id = s.id
       JOIN users u ON s.employee_id = u.id
@@ -429,12 +450,13 @@ router.get('/cascade', requireAuth, (req, res) => {
       goals = goals.filter(g => allowedGoalIds.has(g.id));
     }
 
-    const getScore = (uom, actual, target) => {
+    const getScore = (uom, actual, target, scoreCap) => {
       if (actual === null || target === 0 || !target) return 0;
       if (uom === 'zero') return actual === 0 ? 100 : 0;
       if (uom === 'timeline') return 0;
-      if (uom === 'min_numeric' || uom === 'min_percent') return Math.min((actual / target) * 100, 150);
-      if (uom === 'max_numeric' || uom === 'max_percent') return Math.min((target / actual) * 100, 150);
+      const cap = scoreCap !== undefined && scoreCap !== null ? scoreCap : 150;
+      if (uom === 'min_numeric' || uom === 'min_percent') return Math.min((actual / target) * 100, cap);
+      if (uom === 'max_numeric' || uom === 'max_percent') return Math.min((target / actual) * 100, cap);
       return 0;
     };
 
@@ -445,7 +467,7 @@ router.get('/cascade', requireAuth, (req, res) => {
       ownerRole: g.ownerRole,
       thrustArea: g.thrustArea,
       parentGoalId: g.parentGoalId,
-      progressScore: Math.round(getScore(g.uomType, g.actualValue, g.targetValue))
+      progressScore: Math.round(getScore(g.uomType, g.actualValue, g.targetValue, g.scoreCap))
     }));
 
     res.json(result);

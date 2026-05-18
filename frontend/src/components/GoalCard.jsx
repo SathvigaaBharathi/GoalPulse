@@ -40,7 +40,14 @@ const GoalCard = ({ goal, onUpdate, isManagerView, isEditable }) => {
               className="w-full text-sm p-1 border rounded"
             />
           ) : (
-            <span className="text-sm font-semibold">{goal.target_value || goal.target_date || 'N/A'} <span className="text-xs font-normal text-gray-400">({goal.uom_type})</span></span>
+            <span className="text-sm font-semibold">
+              {goal.target_value || goal.target_date || 'N/A'} <span className="text-xs font-normal text-gray-400">({goal.uom_type})</span>
+              {goal.score_cap < 150 && (
+                <span className="inline-flex items-center gap-1 bg-amber-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm ml-2">
+                  Capped at {goal.score_cap}%
+                </span>
+              )}
+            </span>
           )}
         </div>
         

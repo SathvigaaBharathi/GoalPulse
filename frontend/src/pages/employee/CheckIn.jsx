@@ -6,6 +6,24 @@ import useCycleStore from '../../store/useCycleStore';
 import { Target, CheckCircle2, Circle, AlertCircle, Activity, Flame } from 'lucide-react';
 import NextActionCard from '../../components/NextActionCard';
 
+const calculateGoalScore = (uom, actual, target, scoreCap) => {
+  if (actual === null || actual === undefined || actual === '' || target === 0 || !target) return null;
+  if (uom === 'zero') return actual === 0 ? 100 : 0;
+  if (uom === 'timeline') return null;
+  
+  let score = 0;
+  if (uom === 'min_numeric' || uom === 'min_percent') {
+    score = (actual / target) * 100;
+  } else if (uom === 'max_numeric' || uom === 'max_percent') {
+    score = (target / actual) * 100;
+  } else {
+    return null;
+  }
+  
+  const cap = scoreCap !== undefined && scoreCap !== null ? scoreCap : 150;
+  return Math.min(score, cap);
+};
+
 const CheckIn = () => {
   const { token } = useAuthStore();
   const { window } = useCycleStore();
@@ -146,10 +164,26 @@ const CheckIn = () => {
                 <span className="text-xs font-semibold text-primary/70 uppercase tracking-wider">{goal.thrust_area_name}</span>
                 <h3 className="text-lg font-bold text-primary mt-1">{goal.title}</h3>
                 <p className="text-sm text-gray-600 mb-4">{goal.description}</p>
-                <div className="flex gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <div className="flex flex-wrap items-center gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
                   <div><span className="text-gray-500">Target:</span> <strong>{goal.target_value || goal.target_date || 'N/A'}</strong> ({goal.uom_type})</div>
                   <div><span className="text-gray-500">Weight:</span> <strong>{goal.weightage}%</strong></div>
+                  {(() => {
+                    const score = calculateGoalScore(goal.uom_type, achievement.actual_value, goal.target_value, goal.score_cap);
+                    return score !== null ? (
+                      <div className="border-l pl-4 border-gray-200">
+                        <span className="text-gray-500">Score:</span> <strong className="text-primary">{Math.round(score)}%</strong>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
+                {(() => {
+                  const score = calculateGoalScore(goal.uom_type, achievement.actual_value, goal.target_value, goal.score_cap);
+                  return score !== null && goal.score_cap < 150 ? (
+                    <p className="text-xs text-amber-600 mt-2 font-medium">
+                      Maximum score for this goal is capped at {goal.score_cap}%
+                    </p>
+                  ) : null;
+                })()}
               </div>
               
               <div className="w-full md:w-72 bg-gray-50/50 p-4 rounded-xl border border-gray-100">

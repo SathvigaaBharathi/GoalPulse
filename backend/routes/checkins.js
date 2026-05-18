@@ -5,7 +5,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 const { sendTeamsNotification } = require('../notifications/teams');
 
 // Calculate score based on UoM rules
-const calculateScore = (uom, actual, target, targetDateStr, actualDateStr) => {
+const calculateScore = (uom, actual, target, targetDateStr, actualDateStr, scoreCap = 150) => {
   if (uom === 'zero') {
     return actual === 0 ? 100 : 0;
   }
@@ -32,7 +32,8 @@ const calculateScore = (uom, actual, target, targetDateStr, actualDateStr) => {
     score = (target / actual) * 100;
   }
   
-  return Math.min(score, 150); // Capped at 150%
+  const cap = scoreCap !== undefined && scoreCap !== null ? scoreCap : 150;
+  return Math.min(score, cap); // Capped at score_cap % (defaults to 150%)
 };
 
 // Log achievement (Employee)
@@ -105,7 +106,7 @@ router.get('/team', requireAuth, requireRole(['manager']), (req, res) => {
       
       const goalsWithScore = goals.map(g => ({
         ...g,
-        score: g.actual_value !== null ? calculateScore(g.uom_type, g.actual_value, g.target_value, g.target_date, g.actual_date) : null
+        score: g.actual_value !== null ? calculateScore(g.uom_type, g.actual_value, g.target_value, g.target_date, g.actual_date, g.score_cap) : null
       }));
 
       // Also get comments

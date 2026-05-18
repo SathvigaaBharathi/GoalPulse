@@ -20,7 +20,7 @@ const GoalSheet = () => {
   // New goal form state
   const [showForm, setShowForm] = useState(false);
   const [newGoal, setNewGoal] = useState({
-    title: '', description: '', thrust_area_id: '', uom_type: 'max_numeric', target_value: '', target_date: '', weightage: 10
+    title: '', description: '', thrust_area_id: '', uom_type: 'max_numeric', target_value: '', target_date: '', weightage: 10, score_cap: 150
   });
 
   const fetchSheet = async () => {
@@ -59,7 +59,7 @@ const GoalSheet = () => {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       await axios.post(`${apiUrl}/api/goals`, newGoal, { headers: { Authorization: `Bearer ${token}` } });
       setShowForm(false);
-      setNewGoal({ title: '', description: '', thrust_area_id: '', uom_type: 'max_numeric', target_value: '', target_date: '', weightage: 10 });
+      setNewGoal({ title: '', description: '', thrust_area_id: '', uom_type: 'max_numeric', target_value: '', target_date: '', weightage: 10, score_cap: 150 });
       fetchSheet();
       bumpAction();
     } catch (err) {
@@ -306,6 +306,22 @@ const GoalSheet = () => {
                 />
               )}
             </div>
+
+            {(newGoal.uom_type === 'min_numeric' || newGoal.uom_type === 'min_percent') && (
+              <div className="animate-fade-down">
+                <label className="block text-sm font-medium mb-1">Max Score Cap %</label>
+                <input 
+                  type="number" 
+                  min="100" 
+                  max="150" 
+                  step="5"
+                  value={newGoal.score_cap}
+                  onChange={e => setNewGoal({...newGoal, score_cap: Number(e.target.value)})}
+                  className="w-full p-2 border rounded"
+                />
+                <p className="text-xs text-gray-400 mt-1">Limit how much over-achievement counts toward this goal.</p>
+              </div>
+            )}
             
             <div className="flex justify-end gap-3 pt-4 border-t">
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
